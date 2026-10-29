@@ -85,7 +85,7 @@ class StatsControllerTest {
 
     @Test
     void getStats_shouldReturnBadRequest_whenValidationExceptionThrown() throws Exception {
-        Mockito.when(statsService.getStats(anyString(), anyString(), any() , anyBoolean()))
+        Mockito.when(statsService.getStats(anyString(), anyString(), any(), anyBoolean()))
                 .thenThrow(new ValidationException("Дата начала не может быть позже даты окончания"));
 
         mvc.perform(get("/stats")

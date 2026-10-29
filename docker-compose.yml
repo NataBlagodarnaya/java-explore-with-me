@@ -1,14 +1,33 @@
 services:
-  stats-server:
-    ports:
-      - "9090:9090"
-
   stats-db:
     image: postgres:16.1
-
-  ewm-service:
+    container_name: stats-db
+    environment:
+      - POSTGRES_DB=ewm-stats
+      - POSTGRES_USER=practicum
+      - POSTGRES_PASSWORD=practicum
     ports:
-      - "8080:8080"
+      - "6543:5432"
+    volumes:
+      - /var/lib/postgresql/data_stats
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U practicum -d ewm-stats"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  ewm-db:
-    image: postgres:16.1
+  stats-server:
+    build:
+      context: ./stats-service/stats-server
+      dockerfile: Dockerfile
+    container_name: stats-server
+    ports:
+      - "9090:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm-stats
+      - SPRING_DATASOURCE_USERNAME=practicum
+      - SPRING_DATASOURCE_PASSWORD=practicum
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+    depends_on:
+      stats-db:
+        condition: service_healthy

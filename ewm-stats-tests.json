@@ -1,0 +1,400 @@
+{
+  "info": {
+    "_postman_id": "5cbed78f-484c-4670-9985-520f1c03fe94",
+    "name": "explore-with-me",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55318697",
+    "_collection_link": "https://go.postman.co/collection/55318697-5cbed78f-484c-4670-9985-520f1c03fe94?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Сохранить просмотр Event 1 (User A)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 201 Created\", function () {\n    pm.response.to.have.status(201);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"app\": \"ewm-main-service\",\n  \"uri\": \"/events/1\",\n  \"ip\": \"192.168.1.10\",\n  \"timestamp\": \"2026-10-28 10:00:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:9090/hit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "hit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Сохранить просмотр Event 2 (User B)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 201 Created\", function () {\n    pm.response.to.have.status(201);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"app\": \"ewm-main-service\",\n  \"uri\": \"/events/2\",\n  \"ip\": \"10.0.0.5\",\n  \"timestamp\": \"2026-10-28 10:10:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:9090/hit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "hit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Сохранить повторный просмотр Event 1 (User A)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 201 Created\", function () {\n    pm.response.to.have.status(201);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"app\": \"ewm-main-service\",\n  \"uri\": \"/events/1\",\n  \"ip\": \"192.168.1.10\",\n  \"timestamp\": \"2026-10-28 10:05:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:9090/hit",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "hit"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsAll)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 200 OK\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Ответ должен быть массивом\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.be.an('array');\n    pm.expect(jsonData.length).to.equal(2);\n});\n\npm.test(\"Проверка правильности подсчета просмотров\", function () {\n    var jsonData = pm.response.json();\n    \n    // Первый элемент в массиве (у него 2 просмотра)\n    pm.expect(jsonData[0].uri).to.equal(\"/events/1\");\n    pm.expect(jsonData[0].hits).to.equal(2);\n    \n    // Второй элемент в массиве (у него 1 просмотр)\n    pm.expect(jsonData[1].uri).to.equal(\"/events/2\");\n    pm.expect(jsonData[1].hits).to.equal(1);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-10-01 00:00:00&end=2026-11-01 00:00:00&unique=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2026-11-01 00:00:00"
+            },
+            {
+              "key": "unique",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsAllUnique)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 200 OK\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Ответ должен быть массивом\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.be.an('array');\n    pm.expect(jsonData.length).to.equal(2);\n});\n\npm.test(\"getStatsAllUnique: проверка склейки дублей IP\", function () {\n    var jsonData = pm.response.json();\n    \n    pm.expect(jsonData[0].uri).to.equal(\"/events/1\");\n    pm.expect(jsonData[0].hits).to.equal(1);\n    \n    pm.expect(jsonData[1].uri).to.equal(\"/events/2\");\n    pm.expect(jsonData[1].hits).to.equal(1);\n});\n"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-10-01 00:00:00&end=2026-11-01 00:00:00&unique=true",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2026-11-01 00:00:00"
+            },
+            {
+              "key": "unique",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsByUris)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 200 OK\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"getStatsByUris: фильтр по конкретному URI\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.be.an('array');\n    pm.expect(jsonData.length).to.equal(1);\n    \n    pm.expect(jsonData[0].uri).to.equal(\"/events/1\");\n    pm.expect(jsonData[0].hits).to.equal(2);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-10-01 00:00:00&end=2026-11-01 00:00:00&unique=false&uris=/events/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2026-11-01 00:00:00"
+            },
+            {
+              "key": "unique",
+              "value": "false"
+            },
+            {
+              "key": "uris",
+              "value": "/events/1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsByUrisUnique)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 200 OK\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"getStatsByUrisUnique: фильтр по URI + уникальный IP\", function () {\n    var jsonData = pm.response.json();\n    pm.expect(jsonData).to.be.an('array');\n    pm.expect(jsonData.length).to.equal(1);\n    \n    pm.expect(jsonData[0].uri).to.equal(\"/events/1\");\n    pm.expect(jsonData[0].hits).to.equal(1);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-10-01 00:00:00&end=2026-11-01 00:00:00&unique=true&uris=/events/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2026-11-01 00:00:00"
+            },
+            {
+              "key": "unique",
+              "value": "true"
+            },
+            {
+              "key": "uris",
+              "value": "/events/1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsAll) negative",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 400 Bad Request\", function () {\n    pm.response.to.have.status(400);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-11-01 00:00:00&end=2026-10-01 00:00:00&unique=false",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-11-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "unique",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получить общую статистику (getStatsAllUnique) negative",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Статус ответа должен быть 400 Bad Request при неверном формате даты\", function () {\n    pm.response.to.have.status(400);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:9090/stats?start=2026-10-01 00:00:00&end=october 2026 10 am&unique=true",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "9090",
+          "path": [
+            "stats"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "2026-10-01 00:00:00"
+            },
+            {
+              "key": "end",
+              "value": "october 2026 10 am"
+            },
+            {
+              "key": "unique",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

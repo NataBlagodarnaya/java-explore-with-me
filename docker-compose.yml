@@ -9,7 +9,7 @@ services:
     ports:
       - "6543:5432"
     volumes:
-      - /var/lib/postgresql/data_stats
+      - stats-db-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U practicum -d ewm-stats"]
       interval: 5s
@@ -22,12 +22,50 @@ services:
       dockerfile: Dockerfile
     container_name: stats-server
     ports:
-      - "9090:8080"
+      - "9090:9090"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm-stats
       - SPRING_DATASOURCE_USERNAME=practicum
       - SPRING_DATASOURCE_PASSWORD=practicum
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
     depends_on:
       stats-db:
         condition: service_healthy
+
+  ewm-db:
+    image: postgres:16.1
+    container_name: ewm-db
+    environment:
+      - POSTGRES_DB=ewm-main
+      - POSTGRES_USER=practicum
+      - POSTGRES_PASSWORD=practicum
+    ports:
+      - "6544:5432"
+    volumes:
+      - ewm-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U practicum -d ewm-main"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ewm-service:
+    build:
+      context: ./main-service
+      dockerfile: Dockerfile
+    container_name: ewm-service
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm-main
+      - SPRING_DATASOURCE_USERNAME=practicum
+      - SPRING_DATASOURCE_PASSWORD=practicum
+      - STATS_SERVER_URL=http://stats-server:9090
+    depends_on:
+      ewm-db:
+        condition: service_healthy
+      stats-server:
+        condition: service_started
+
+volumes:
+  stats-db-data:
+  ewm-db-data:

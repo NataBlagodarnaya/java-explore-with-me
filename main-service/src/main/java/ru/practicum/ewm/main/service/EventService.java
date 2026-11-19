@@ -1,6 +1,7 @@
 package ru.practicum.ewm.main.service;
 
 import ru.practicum.ewm.main.dto.*;
+import ru.practicum.ewm.main.model.EventSort;
 import ru.practicum.ewm.main.model.EventState;
 
 import java.time.LocalDateTime;
@@ -20,4 +21,10 @@ public interface EventService {
                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size);
 
     EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest request);
+
+    List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
+                                        LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                        boolean onlyAvailable, EventSort sort, int from, int size);
+
+    EventFullDto getPublicEvent(Long id);
 }

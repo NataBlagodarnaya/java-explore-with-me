@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.main.dto.*;
+import ru.practicum.ewm.main.exception.BadRequestException;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.EventMapper;
@@ -17,6 +18,7 @@ import ru.practicum.ewm.main.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -31,6 +33,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private final EventStatsService eventStatsService;
 
     @Override
     @Transactional
@@ -47,11 +50,15 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getUserEvents(Long userId, int from, int size) {
         findUser(userId);
-        return eventRepository.findAllByInitiatorId(userId).stream()
+        List<Event> events = eventRepository.findAllByInitiatorId(userId).stream()
                 .sorted(Comparator.comparing(Event::getId))
                 .skip(from)
                 .limit(size)
-                .map(event -> EventMapper.toEventShortDto(event, countConfirmed(event.getId()), 0L))
+                .toList();
+        Map<Long, Long> views = eventStatsService.getViews(events);
+        return events.stream()
+                .map(event -> EventMapper.toEventShortDto(event, countConfirmed(event.getId()),
+                        views.getOrDefault(event.getId(), 0L)))
                 .toList();
     }
 
@@ -59,7 +66,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         findUser(userId);
         Event event = findUserEvent(userId, eventId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), 0L);
+        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
     }
 
     @Override
@@ -106,14 +113,17 @@ public class EventServiceImpl implements EventService {
         }
 
         log.info("Обновлено событие id={} пользователем id={}", eventId, userId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), 0L);
+        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
     }
 
     @Override
     public List<EventFullDto> getEventsByAdmin(List<Long> users, List<EventState> states,
                                                List<Long> categories, LocalDateTime rangeStart,
                                                LocalDateTime rangeEnd, int from, int size) {
-        return eventRepository.findAll().stream()
+        if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("Range end must not be before range start");
+        }
+        List<Event> events = eventRepository.findAll().stream()
                 .filter(event -> users == null || users.isEmpty()
                         || users.contains(event.getInitiator().getId()))
                 .filter(event -> states == null || states.isEmpty()
@@ -125,7 +135,11 @@ public class EventServiceImpl implements EventService {
                 .sorted(Comparator.comparing(Event::getId))
                 .skip(from)
                 .limit(size)
-                .map(event -> EventMapper.toEventFullDto(event, countConfirmed(event.getId()), 0L))
+                .toList();
+        Map<Long, Long> views = eventStatsService.getViews(events);
+        return events.stream()
+                .map(event -> EventMapper.toEventFullDto(event, countConfirmed(event.getId()),
+                        views.getOrDefault(event.getId(), 0L)))
                 .toList();
     }
 
@@ -181,7 +195,54 @@ public class EventServiceImpl implements EventService {
         }
 
         log.info("Обновлено событие id={} администратором", eventId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), 0L);
+        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
+    }
+
+    @Override
+    public List<EventShortDto> getPublicEvents(String text, List<Long> categories, Boolean paid,
+                                               LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                               boolean onlyAvailable, EventSort sort, int from, int size) {
+        if (rangeStart != null && rangeEnd != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("Range end must not be before range start");
+        }
+        LocalDateTime start = rangeStart != null ? rangeStart : LocalDateTime.now();
+        String pattern = text == null ? null : text.toLowerCase();
+
+        List<Event> events = eventRepository.findAll().stream()
+                .filter(event -> event.getState() == EventState.PUBLISHED)
+                .filter(event -> pattern == null
+                        || event.getAnnotation().toLowerCase().contains(pattern)
+                        || event.getDescription().toLowerCase().contains(pattern))
+                .filter(event -> categories == null || categories.isEmpty()
+                        || categories.contains(event.getCategory().getId()))
+                .filter(event -> paid == null || event.isPaid() == paid)
+                .filter(event -> !event.getEventDate().isBefore(start))
+                .filter(event -> rangeEnd == null || !event.getEventDate().isAfter(rangeEnd))
+                .filter(event -> !onlyAvailable || event.getParticipantLimit() == 0
+                        || countConfirmed(event.getId()) < event.getParticipantLimit())
+                .toList();
+
+        Map<Long, Long> views = eventStatsService.getViews(events);
+        Comparator<EventShortDto> comparator = sort == EventSort.VIEWS
+                ? Comparator.comparing(EventShortDto::getViews).reversed()
+                : Comparator.comparing(EventShortDto::getEventDate);
+
+        return events.stream()
+                .map(event -> EventMapper.toEventShortDto(event, countConfirmed(event.getId()),
+                        views.getOrDefault(event.getId(), 0L)))
+                .sorted(comparator)
+                .skip(from)
+                .limit(size)
+                .toList();
+    }
+
+    @Override
+    public EventFullDto getPublicEvent(Long id) {
+        Event event = eventRepository.findById(id)
+                .filter(found -> found.getState() == EventState.PUBLISHED)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
+        long views = eventStatsService.getViews(List.of(event)).getOrDefault(id, 0L);
+        return EventMapper.toEventFullDto(event, countConfirmed(id), views);
     }
 
     private void checkPublicationDate(LocalDateTime eventDate) {
@@ -215,5 +276,9 @@ public class EventServiceImpl implements EventService {
 
     private long countConfirmed(Long eventId) {
         return requestRepository.countByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
+    }
+
+    private long countViews(Event event) {
+        return eventStatsService.getViews(List.of(event)).getOrDefault(event.getId(), 0L);
     }
 }

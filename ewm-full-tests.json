@@ -2530,6 +2530,45 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "Поиск событий админом - конец раньше начала",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Текст ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.reason).to.eql(\"Incorrectly made request.\");\n    pm.expect(b.message).to.eql(\"Range end must not be before range start\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/admin/events?rangeStart=2030-01-02 00:00:00&rangeEnd=2030-01-01 00:00:00",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "rangeStart",
+                      "value": "2030-01-02 00:00:00"
+                    },
+                    {
+                      "key": "rangeEnd",
+                      "value": "2030-01-01 00:00:00"
+                    }
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
@@ -4238,6 +4277,2391 @@
               "response": []
             }
           ]
+        },
+        {
+          "name": "Compilations",
+          "item": [
+            {
+              "name": "Подготовка - пользователь",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('compUserId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compUserName', 'Comp User ' + Date.now());\npm.collectionVariables.set('compUserEmail', 'comp_user_' + Date.now() + '@practicummail.ru');"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"{{compUserName}}\", \"email\": \"{{compUserEmail}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/users",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - категория",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('compCatId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compCatName', 'comp_cat_' + Date.now());"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"{{compCatName}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/categories",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "categories"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - событие",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('compEventId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const d = new Date(Date.now() + 24 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2, '0');\nconst eventDate = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());\npm.collectionVariables.set('eventDate', eventDate);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"annotation\": \"Аннотация события для проверки, не короче двадцати символов\",\n    \"category\": {{compCatId}},\n    \"description\": \"Описание события для проверки, не короче двадцати символов\",\n    \"eventDate\": \"{{eventDate}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": false,\n    \"participantLimit\": 10,\n    \"requestModeration\": true,\n    \"title\": \"Событие для подборки\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{compUserId}}/events",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{compUserId}}",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\nconst body = pm.response.json();\npm.test(\"Поля созданной подборки\", () => {\n    pm.expect(body.id).to.be.a('number');\n    pm.expect(body.title).to.eql(pm.collectionVariables.get('compTitle'));\n    pm.expect(body.pinned).to.eql(true);\n    pm.expect(body.events.length).to.eql(1);\n    pm.expect(body.events[0].id).to.eql(pm.collectionVariables.get('compEventId'));\n    pm.expect(body.events[0].confirmedRequests).to.eql(0);\n});\n\npm.collectionVariables.set('compId', body.id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compTitle', 'comp_' + Date.now());"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle}}\", \"pinned\": true, \"events\": [{{compEventId}}]}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки - без событий",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\nconst body = pm.response.json();\npm.test(\"Не закреплена и без событий\", () => {\n    pm.expect(body.pinned).to.eql(false);\n    pm.expect(body.events).to.be.an('array');\n    pm.expect(body.events.length).to.eql(0);\n});\n\npm.collectionVariables.set('compId2', body.id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compTitle2', 'comp2_' + Date.now());"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle2}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки - повтор названия",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.reason).to.eql(\"For the requested operation the conditions are not met.\");\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      ""
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки - пустое название",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.message).to.include(\"Field: title\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки - название длиннее 50 символов",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.message).to.include(\"Field: title\");\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('longTitle', 'a'.repeat(51));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{longTitle}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание подборки - событие не найдено",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Event with id=999999 was not found\");\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compTitle3', 'comp3_' + Date.now());"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle3}}\", \"events\": [999999]}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборки по id",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst b = pm.response.json();\npm.test(\"Совпадают id, название, закрепление и событие\", () => {\n    pm.expect(b.id).to.eql(pm.collectionVariables.get('compId'));\n    pm.expect(b.title).to.eql(pm.collectionVariables.get('compTitle'));\n    pm.expect(b.pinned).to.eql(true);\n    pm.expect(b.events.length).to.eql(1);\n    pm.expect(b.events[0].id).to.eql(pm.collectionVariables.get('compEventId'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборки - не существует",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст как в спецификации\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Compilation with id=999999 was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations/999999",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations",
+                    "999999"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборок - закреплённые",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst body = pm.response.json();\npm.test(\"Все подборки закреплены, среди них есть наша\", () => {\n    pm.expect(body).to.be.an('array');\n    body.forEach(c => pm.expect(c.pinned).to.eql(true));\n    pm.expect(body.map(c => c.id)).to.include(pm.collectionVariables.get('compId'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations?pinned=true&from=0&size=1000",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations"
+                  ],
+                  "query": [
+                    {
+                      "key": "pinned",
+                      "value": "true"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "1000"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборок - незакреплённые",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst body = pm.response.json();\npm.test(\"Все подборки не закреплены, среди них есть наша\", () => {\n    pm.expect(body).to.be.an('array');\n    body.forEach(c => pm.expect(c.pinned).to.eql(false));\n    pm.expect(body.map(c => c.id)).to.include(pm.collectionVariables.get('compId2'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations?pinned=false&from=0&size=1000",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations"
+                  ],
+                  "query": [
+                    {
+                      "key": "pinned",
+                      "value": "false"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "1000"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборок - size 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Вернулась ровно одна подборка\", () => {\n    const body = pm.response.json();\n    pm.expect(body).to.be.an('array');\n    pm.expect(body.length).to.eql(1);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations?from=0&size=1",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборок - size 0",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"BAD_REQUEST\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations?from=0&size=0",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations"
+                  ],
+                  "query": [
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst b = pm.response.json();\npm.test(\"Название и закрепление изменились, состав очищен\", () => {\n    pm.expect(b.id).to.eql(pm.collectionVariables.get('compId'));\n    pm.expect(b.title).to.eql(pm.collectionVariables.get('compTitleNew'));\n    pm.expect(b.pinned).to.eql(false);\n    pm.expect(b.events.length).to.eql(0);\n});\n\npm.collectionVariables.set('compTitle', pm.collectionVariables.get('compTitleNew'));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('compTitleNew', pm.collectionVariables.get('compTitle') + '_new');"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitleNew}}\", \"pinned\": false, \"events\": []}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - состав",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst b = pm.response.json();\npm.test(\"В подборке одно событие, остальное не изменилось\", () => {\n    pm.expect(b.events.length).to.eql(1);\n    pm.expect(b.events[0].id).to.eql(pm.collectionVariables.get('compEventId'));\n    pm.expect(b.title).to.eql(pm.collectionVariables.get('compTitle'));\n    pm.expect(b.pinned).to.eql(false);\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      ""
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"events\": [{{compEventId}}]}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - то же название",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Название осталось прежним\", () => {\n    pm.expect(pm.response.json().title).to.eql(pm.collectionVariables.get('compTitle'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - название занято",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"CONFLICT\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"{{compTitle2}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - пустое название",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.message).to.include(\"Field: title\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - событие не найдено",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст ошибки\", () => {\n    pm.expect(pm.response.json().message).to.eql(\"Event with id=999999 was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"events\": [999999]}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Изменение подборки - не существует",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст как в спецификации\", () => {\n    pm.expect(pm.response.json().message).to.eql(\"Compilation with id=999999 was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"title\": \"Любое название\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/999999",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "999999"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Удаление подборки",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 204\", () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Событие осталось после удаления подборки",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Событие на месте\", () => {\n    pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('compEventId'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{compUserId}}/events/{{compEventId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{compUserId}}",
+                    "events",
+                    "{{compEventId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение подборки - удалена",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Compilation with id=\" + pm.collectionVariables.get('compId') + \" was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Удаление подборки - уже удалена",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Compilation with id=\" + pm.collectionVariables.get('compId') + \" was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/admin/compilations/{{compId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "compilations",
+                    "{{compId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "PublicEvents",
+          "item": [
+            {
+              "name": "Подготовка - инициатор",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubOwnerId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('pubOwnerName', 'Pub Owner ' + Date.now());\npm.collectionVariables.set('pubOwnerEmail', 'pub_owner_' + Date.now() + '@practicummail.ru');"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"{{pubOwnerName}}\", \"email\": \"{{pubOwnerEmail}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/users",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - участник",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubMemberId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('pubMemberName', 'Pub Member ' + Date.now());\npm.collectionVariables.set('pubMemberEmail', 'pub_member_' + Date.now() + '@practicummail.ru');"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"{{pubMemberName}}\", \"email\": \"{{pubMemberEmail}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/users",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - категория",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubCatId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('pubCatName', 'pub_cat_' + Date.now());"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"name\": \"{{pubCatName}}\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/categories",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "categories"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - событие А",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubEventAId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const token = 'tok' + Date.now();\npm.collectionVariables.set('pubToken', token);\npm.collectionVariables.set('pubTokenUpper', token.toUpperCase());\n\nconst d = new Date(Date.now() + 24 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2, '0');\npm.collectionVariables.set('pubDateA', d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"annotation\": \"Аннотация {{pubToken}} события А для проверки поиска\",\n    \"category\": {{pubCatId}},\n    \"description\": \"Описание {{pubToken}} события А для проверки поиска\",\n    \"eventDate\": \"{{pubDateA}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": true,\n    \"participantLimit\": 1,\n    \"requestModeration\": false,\n    \"title\": \"Платное событие А\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{pubOwnerId}}/events",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{pubOwnerId}}",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - событие Б",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubEventBId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const d = new Date(Date.now() + 48 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2, '0');\npm.collectionVariables.set('pubDateB', d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"annotation\": \"Аннотация {{pubToken}} события Б для проверки поиска\",\n    \"category\": {{pubCatId}},\n    \"description\": \"Описание {{pubToken}} события Б для проверки поиска\",\n    \"eventDate\": \"{{pubDateB}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Бесплатное событие Б\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{pubOwnerId}}/events",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{pubOwnerId}}",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - публикация события А",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Событие опубликовано\", () => {\n    pm.expect(pm.response.json().state).to.eql(\"PUBLISHED\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"stateAction\": \"PUBLISH_EVENT\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/events/{{pubEventAId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "events",
+                    "{{pubEventAId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - публикация события Б",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Событие опубликовано\", () => {\n    pm.expect(pm.response.json().state).to.eql(\"PUBLISHED\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"stateAction\": \"PUBLISH_EVENT\"}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/admin/events/{{pubEventBId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "events",
+                    "{{pubEventBId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - заявка на событие А",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.test(\"Заявка подтверждена автоматически\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"CONFIRMED\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{pubMemberId}}/requests?eventId={{pubEventAId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{pubMemberId}}",
+                    "requests"
+                  ],
+                  "query": [
+                    {
+                      "key": "eventId",
+                      "value": "{{pubEventAId}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - по тексту",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst body = pm.response.json();\nconst idA = pm.collectionVariables.get('pubEventAId');\nconst idB = pm.collectionVariables.get('pubEventBId');\n\npm.test(\"Найдены оба события в порядке по дате\", () => {\n    pm.expect(body.map(e => e.id)).to.eql([idA, idB]);\n});\n\npm.test(\"Поля краткого события\", () => {\n    pm.expect(body[0].title).to.eql(\"Платное событие А\");\n    pm.expect(body[0].paid).to.eql(true);\n    pm.expect(body[0].confirmedRequests).to.eql(1);\n    pm.expect(body[1].confirmedRequests).to.eql(0);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - текст в верхнем регистре",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Найдены оба события\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventAId'), pm.collectionVariables.get('pubEventBId')]);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubTokenUpper}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubTokenUpper}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - платные",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Только событие А\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventAId')]);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&paid=true&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "paid",
+                      "value": "true"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - бесплатные",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Только событие Б\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventBId')]);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&paid=false&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "paid",
+                      "value": "false"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - только доступные",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Событие А исключено: лимит исчерпан, остаётся Б\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventBId')]);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&onlyAvailable=true&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "onlyAvailable",
+                      "value": "true"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - по категории",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Найдены оба события этой категории\", () => {\n    const body = pm.response.json();\n    pm.expect(body.length).to.eql(2);\n    body.forEach(e => pm.expect(e.category.id).to.eql(pm.collectionVariables.get('pubCatId')));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&categories={{pubCatId}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "categories",
+                      "value": "{{pubCatId}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - категория без событий",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Пустой список\", () => {\n    const body = pm.response.json();\n    pm.expect(body).to.be.an('array');\n    pm.expect(body.length).to.eql(0);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&categories=999999&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "categories",
+                      "value": "999999"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение события - первое открытие",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst b = pm.response.json();\npm.test(\"Полная информация о событии\", () => {\n    pm.expect(b.id).to.eql(pm.collectionVariables.get('pubEventBId'));\n    pm.expect(b.title).to.eql(\"Бесплатное событие Б\");\n    pm.expect(b.state).to.eql(\"PUBLISHED\");\n    pm.expect(b.publishedOn).to.be.a('string');\n    pm.expect(b.confirmedRequests).to.eql(0);\n});\n\npm.test(\"Просмотров пока нет\", () => {\n    pm.expect(b.views).to.eql(0);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events/{{pubEventBId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events",
+                    "{{pubEventBId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение события - второе открытие",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Один просмотр\", () => {\n    pm.expect(pm.response.json().views).to.eql(1);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events/{{pubEventBId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events",
+                    "{{pubEventBId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение события - третье открытие (с того же IP)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Просмотров по-прежнему один, IP тот же\", () => {\n    pm.expect(pm.response.json().views).to.eql(1);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events/{{pubEventBId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events",
+                    "{{pubEventBId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - сортировка по просмотрам",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\nconst body = pm.response.json();\npm.test(\"Сначала Б с просмотром, потом А без просмотров\", () => {\n    pm.expect(body.map(e => e.id)).to.eql([\n        pm.collectionVariables.get('pubEventBId'),\n        pm.collectionVariables.get('pubEventAId')\n    ]);\n    pm.expect(body[0].views).to.eql(1);\n    pm.expect(body[1].views).to.eql(0);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&sort=VIEWS&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "VIEWS"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - сортировка по дате",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Сначала А (раньше), потом Б, и просмотры подставлены\", () => {\n    const body = pm.response.json();\n    pm.expect(body.map(e => e.id)).to.eql([\n        pm.collectionVariables.get('pubEventAId'),\n        pm.collectionVariables.get('pubEventBId')\n    ]);\n    pm.expect(body[1].views).to.eql(1);\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&sort=EVENT_DATE&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "EVENT_DATE"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - диапазон дат",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Только событие А, оно начинается через сутки\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventAId')]);\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const pad = n => String(n).padStart(2, '0');\nconst fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());\nconst hour = 60 * 60 * 1000;\npm.collectionVariables.set('pubRangeStart', fmt(new Date(Date.now() + 12 * hour)));\npm.collectionVariables.set('pubRangeEnd', fmt(new Date(Date.now() + 36 * hour)));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&rangeStart={{pubRangeStart}}&rangeEnd={{pubRangeEnd}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "rangeStart",
+                      "value": "{{pubRangeStart}}"
+                    },
+                    {
+                      "key": "rangeEnd",
+                      "value": "{{pubRangeEnd}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - диапазон в прошлом",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Пустой список\", () => {\n    pm.expect(pm.response.json().length).to.eql(0);\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const pad = n => String(n).padStart(2, '0');\nconst fmt = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());\nconst hour = 60 * 60 * 1000;\npm.collectionVariables.set('pubPastStart', fmt(new Date(Date.now() - 72 * hour)));\npm.collectionVariables.set('pubPastEnd', fmt(new Date(Date.now() - 48 * hour)));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&rangeStart={{pubPastStart}}&rangeEnd={{pubPastEnd}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "rangeStart",
+                      "value": "{{pubPastStart}}"
+                    },
+                    {
+                      "key": "rangeEnd",
+                      "value": "{{pubPastEnd}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - конец раньше начала",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.message).to.eql(\"Range end must not be before range start\");\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      ""
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?rangeStart={{pubRangeEnd}}&rangeEnd={{pubRangeStart}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "rangeStart",
+                      "value": "{{pubRangeEnd}}"
+                    },
+                    {
+                      "key": "rangeEnd",
+                      "value": "{{pubRangeStart}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - конец раньше начала Copy",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"BAD_REQUEST\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?sort=WRONG",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "sort",
+                      "value": "WRONG"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - size 0",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"BAD_REQUEST\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?size=0",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "size",
+                      "value": "0"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - пустой текст",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    pm.expect(pm.response.json().status).to.eql(\"BAD_REQUEST\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text=",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение события - не существует",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст как в спецификации\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Event with id=999999 was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events/999999",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events",
+                    "999999"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Подготовка - событие В",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 201\", () => pm.response.to.have.status(201));\n\npm.collectionVariables.set('pubEventCId', pm.response.json().id);"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const d = new Date(Date.now() + 72 * 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2, '0');\npm.collectionVariables.set('pubDateC', d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())\n    + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"annotation\": \"Аннотация {{pubToken}} события В для проверки поиска\",\n    \"category\": {{pubCatId}},\n    \"description\": \"Описание {{pubToken}} события В для проверки поиска\",\n    \"eventDate\": \"{{pubDateC}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": false,\n    \"participantLimit\": 0,\n    \"requestModeration\": true,\n    \"title\": \"Неопубликованное событие В\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{pubOwnerId}}/events",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{pubOwnerId}}",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - неопубликованное не показывается",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Только А и Б, события В нет\", () => {\n    const ids = pm.response.json().map(e => e.id);\n    pm.expect(ids).to.eql([pm.collectionVariables.get('pubEventAId'), pm.collectionVariables.get('pubEventBId')]);\n    pm.expect(ids).to.not.include(pm.collectionVariables.get('pubEventCId'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&from=0&size=100",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "100"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Получение события - не опубликовано",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 404\", () => pm.response.to.have.status(404));\n\npm.test(\"Текст ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"NOT_FOUND\");\n    pm.expect(b.message).to.eql(\"Event with id=\" + pm.collectionVariables.get('pubEventCId') + \" was not found\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events/{{pubEventCId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events",
+                    "{{pubEventCId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Удаление категории - есть события",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Текст как в спецификации\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.reason).to.eql(\"For the requested operation the conditions are not met.\");\n    pm.expect(b.message).to.eql(\"The category is not empty\");\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/admin/categories/{{pubCatId}}",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "categories",
+                    "{{pubCatId}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Поиск событий - from 1, size 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 200\", () => pm.response.to.have.status(200));\n\npm.test(\"Вернулось только второе по дате событие Б\", () => {\n    const body = pm.response.json();\n    pm.expect(body.length).to.eql(1);\n    pm.expect(body[0].id).to.eql(pm.collectionVariables.get('pubEventBId'));\n});"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{mainUrl}}/events?text={{pubToken}}&from=1&size=1",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "events"
+                  ],
+                  "query": [
+                    {
+                      "key": "text",
+                      "value": "{{pubToken}}"
+                    },
+                    {
+                      "key": "from",
+                      "value": "1"
+                    },
+                    {
+                      "key": "size",
+                      "value": "1"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
@@ -4437,6 +6861,138 @@
     },
     {
       "key": "rejRequestId",
+      "value": ""
+    },
+    {
+      "key": "compUserName",
+      "value": ""
+    },
+    {
+      "key": "compUserEmail",
+      "value": ""
+    },
+    {
+      "key": "compUserId",
+      "value": ""
+    },
+    {
+      "key": "compCatName",
+      "value": ""
+    },
+    {
+      "key": "compCatId",
+      "value": ""
+    },
+    {
+      "key": "compEventId",
+      "value": ""
+    },
+    {
+      "key": "compTitle",
+      "value": ""
+    },
+    {
+      "key": "compId",
+      "value": ""
+    },
+    {
+      "key": "compTitle2",
+      "value": ""
+    },
+    {
+      "key": "compId2",
+      "value": ""
+    },
+    {
+      "key": "longTitle",
+      "value": ""
+    },
+    {
+      "key": "compTitle3",
+      "value": ""
+    },
+    {
+      "key": "compTitleNew",
+      "value": ""
+    },
+    {
+      "key": "pubOwnerName",
+      "value": ""
+    },
+    {
+      "key": "pubOwnerEmail",
+      "value": ""
+    },
+    {
+      "key": "pubOwnerId",
+      "value": ""
+    },
+    {
+      "key": "pubMemberName",
+      "value": ""
+    },
+    {
+      "key": "pubMemberEmail",
+      "value": ""
+    },
+    {
+      "key": "pubMemberId",
+      "value": ""
+    },
+    {
+      "key": "pubCatName",
+      "value": ""
+    },
+    {
+      "key": "pubCatId",
+      "value": ""
+    },
+    {
+      "key": "pubToken",
+      "value": ""
+    },
+    {
+      "key": "pubTokenUpper",
+      "value": ""
+    },
+    {
+      "key": "pubDateA",
+      "value": ""
+    },
+    {
+      "key": "pubEventAId",
+      "value": ""
+    },
+    {
+      "key": "pubDateB",
+      "value": ""
+    },
+    {
+      "key": "pubEventBId",
+      "value": ""
+    },
+    {
+      "key": "pubRangeStart",
+      "value": ""
+    },
+    {
+      "key": "pubRangeEnd",
+      "value": ""
+    },
+    {
+      "key": "pubPastStart",
+      "value": ""
+    },
+    {
+      "key": "pubPastEnd",
+      "value": ""
+    },
+    {
+      "key": "pubDateC",
+      "value": ""
+    },
+    {
+      "key": "pubEventCId",
       "value": ""
     }
   ]

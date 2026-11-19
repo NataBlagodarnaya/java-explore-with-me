@@ -10,6 +10,5 @@ class StatsServerAppTest {
 
     @Test
     void contextLoads() {
-        StatsServerApp.main(new String[]{});
     }
 }

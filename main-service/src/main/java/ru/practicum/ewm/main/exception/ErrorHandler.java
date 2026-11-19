@@ -89,6 +89,13 @@ public class ErrorHandler {
         return buildError(HttpStatus.BAD_REQUEST, REASON_BAD_REQUEST, ex.getMessage(), List.of());
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(final BadRequestException ex) {
+        log.warn("Некорректный запрос: {}", ex.getMessage());
+        return buildError(HttpStatus.BAD_REQUEST, REASON_BAD_REQUEST, ex.getMessage(), List.of());
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUnexpected(final Exception ex) {

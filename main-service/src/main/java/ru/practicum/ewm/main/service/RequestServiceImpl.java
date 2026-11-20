@@ -19,7 +19,7 @@ import ru.practicum.ewm.main.repository.EventRepository;
 import ru.practicum.ewm.main.repository.RequestRepository;
 import ru.practicum.ewm.main.repository.UserRepository;
 import ru.practicum.ewm.main.model.RequestUpdateStatus;
-
+import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -69,7 +69,7 @@ public class RequestServiceImpl implements RequestService {
 
         boolean autoConfirm = !event.isRequestModeration() || event.getParticipantLimit() == 0;
         ParticipationRequest request = ParticipationRequest.builder()
-                .created(LocalDateTime.now())
+                .created(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS))
                 .event(event)
                 .requester(user)
                 .status(autoConfirm ? RequestStatus.CONFIRMED : RequestStatus.PENDING)

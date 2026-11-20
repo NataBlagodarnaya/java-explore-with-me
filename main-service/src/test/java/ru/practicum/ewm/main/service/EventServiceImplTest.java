@@ -368,4 +368,36 @@ class EventServiceImplTest {
         request.setTitle("Концерт группы");
         return request;
     }
+
+    @Test
+    void addEvent_shouldThrowBadRequest_whenEventDateIsInThePast() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
+        when(categoryRepository.findById(2L)).thenReturn(Optional.of(createCategory()));
+        NewEventRequest request = createNewEventRequest(LocalDateTime.now().minusDays(1));
+
+        assertThrows(BadRequestException.class, () -> eventService.addEvent(1L, request));
+
+        verify(eventRepository, never()).save(any(Event.class));
+    }
+
+    @Test
+    void updateUserEvent_shouldThrowBadRequest_whenNewDateIsInThePast() {
+        Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
+        when(eventRepository.findByIdAndInitiatorId(5L, 1L)).thenReturn(Optional.of(event));
+        UpdateEventUserRequest request = new UpdateEventUserRequest();
+        request.setEventDate(LocalDateTime.now().minusDays(1));
+
+        assertThrows(BadRequestException.class, () -> eventService.updateUserEvent(1L, 5L, request));
+    }
+
+    @Test
+    void updateEventByAdmin_shouldThrowBadRequest_whenNewDateIsInThePast() {
+        Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
+        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        UpdateEventAdminRequest request = new UpdateEventAdminRequest();
+        request.setEventDate(LocalDateTime.now().minusDays(1));
+
+        assertThrows(BadRequestException.class, () -> eventService.updateEventByAdmin(5L, request));
+    }
 }

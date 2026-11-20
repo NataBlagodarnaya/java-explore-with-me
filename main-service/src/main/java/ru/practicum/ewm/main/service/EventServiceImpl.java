@@ -150,6 +150,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
         if (request.getEventDate() != null) {
+            checkNotInPast(request.getEventDate());
             checkPublicationDate(request.getEventDate());
             event.setEventDate(request.getEventDate());
         }
@@ -252,10 +253,18 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    private void checkNotInPast(LocalDateTime eventDate) {
+        if (eventDate.isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Field: eventDate. Error: must contain a date that has not yet occurred. "
+                    + "Value: " + eventDate);
+        }
+    }
+
     private void checkEventDate(LocalDateTime eventDate) {
+        checkNotInPast(eventDate);
         if (eventDate.isBefore(LocalDateTime.now().plusHours(MIN_HOURS_BEFORE_EVENT))) {
-            throw new ConflictException("Field: eventDate. Error: должно содержать дату, "
-                    + "которая еще не наступила. Value: " + eventDate);
+            throw new ConflictException("Event date must be at least " + MIN_HOURS_BEFORE_EVENT
+                    + " hours from now. Value: " + eventDate);
         }
     }
 

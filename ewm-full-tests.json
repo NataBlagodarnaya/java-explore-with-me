@@ -1427,7 +1427,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.reason).to.eql(\"For the requested operation the conditions are not met.\");\n    pm.expect(b.message).to.include(\"Field: eventDate\");\n});"
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.reason).to.eql(\"Incorrectly made request.\");\n    pm.expect(b.message).to.include(\"Field: eventDate\");\n});"
                     ]
                   }
                 },
@@ -1447,6 +1447,54 @@
                 "body": {
                   "mode": "raw",
                   "raw": "{\n    \"annotation\": \"Аннотация события для проверки, не короче двадцати символов\",\n    \"category\": {{eventCatId}},\n    \"description\": \"Описание события для проверки, не короче двадцати символов\",\n    \"eventDate\": \"{{pastDate}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": false,\n    \"participantLimit\": 10,\n    \"requestModeration\": true,\n    \"title\": \"Событие для тестов\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{mainUrl}}/users/{{eventUserId}}/events",
+                  "host": [
+                    "{{mainUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "{{eventUserId}}",
+                    "events"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Создание события - дата менее чем через 2 часа",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.message).to.include(\"Event date must be at least\");\n});"
+                    ]
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const d = new Date(Date.now() + 60 * 60 * 1000);\nconst pad = n => String(n).padStart(2, '0');\npm.collectionVariables.set('soonDate', d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate())\n    + ' ' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"annotation\": \"Аннотация события для проверки, не короче двадцати символов\",\n    \"category\": {{eventCatId}},\n    \"description\": \"Описание события для проверки, не короче двадцати символов\",\n    \"eventDate\": \"{{soonDate}}\",\n    \"location\": {\"lat\": 55.754167, \"lon\": 37.62},\n    \"paid\": false,\n    \"participantLimit\": 10,\n    \"requestModeration\": true,\n    \"title\": \"Событие для тестов\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1762,7 +1810,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.message).to.include(\"Field: eventDate\");\n});"
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.reason).to.eql(\"Incorrectly made request.\");\n    pm.expect(b.message).to.include(\"Field: eventDate\");\n});"
                     ]
                   }
                 },
@@ -2277,7 +2325,7 @@
                   "script": {
                     "type": "text/javascript",
                     "exec": [
-                      "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"CONFLICT\");\n    pm.expect(b.message).to.include(\"Event date must be at least\");\n});"
+                      "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));\n\npm.test(\"Формат ошибки\", () => {\n    const b = pm.response.json();\n    pm.expect(b.status).to.eql(\"BAD_REQUEST\");\n    pm.expect(b.reason).to.eql(\"Incorrectly made request.\");\n    pm.expect(b.message).to.include(\"Field: eventDate\");\n});"
                     ]
                   }
                 },
@@ -6993,6 +7041,10 @@
     },
     {
       "key": "pubEventCId",
+      "value": ""
+    },
+    {
+      "key": "soonDate",
       "value": ""
     }
   ]

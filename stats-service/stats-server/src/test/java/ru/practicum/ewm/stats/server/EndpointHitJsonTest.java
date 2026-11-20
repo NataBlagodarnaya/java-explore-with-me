@@ -30,10 +30,10 @@ class EndpointHitJsonTest {
 
         JsonContent<EndpointHitDto> result = hitJson.write(dto);
 
-        assertThat(result).hasJsonPathStringValue("$.app", "ewm-main-service");
-        assertThat(result).hasJsonPathStringValue("$.uri", "/events/99");
-        assertThat(result).hasJsonPathStringValue("$.ip", "172.16.0.1");
-        assertThat(result).hasJsonPathStringValue("$.timestamp", "2026-10-28 15:30:00");
+        assertThat(result).extractingJsonPathStringValue("$.app").isEqualTo("ewm-main-service");
+        assertThat(result).extractingJsonPathStringValue("$.uri").isEqualTo("/events/99");
+        assertThat(result).extractingJsonPathStringValue("$.ip").isEqualTo("172.16.0.1");
+        assertThat(result).extractingJsonPathStringValue("$.timestamp").isEqualTo("2026-10-28 15:30:00");
     }
 
     @Test
@@ -63,8 +63,8 @@ class EndpointHitJsonTest {
 
         JsonContent<ViewStatsDto> result = statsJson.write(dto);
 
-        assertThat(result).hasJsonPathStringValue("$.app", "ewm-main-service");
-        assertThat(result).hasJsonPathStringValue("$.uri", "/events/99");
-        assertThat(result).hasJsonPathNumberValue("$.hits", 15);
+        assertThat(result).extractingJsonPathStringValue("$.app").isEqualTo("ewm-main-service");
+        assertThat(result).extractingJsonPathStringValue("$.uri").isEqualTo("/events/99");
+        assertThat(result).extractingJsonPathNumberValue("$.hits").isEqualTo(15);
     }
 }

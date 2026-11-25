@@ -1,18 +1,16 @@
 package ru.practicum.ewm.main.mapper;
 
-import ru.practicum.ewm.main.dto.EventFullDto;
-import ru.practicum.ewm.main.dto.EventShortDto;
-import ru.practicum.ewm.main.dto.LocationDto;
-import ru.practicum.ewm.main.dto.NewEventRequest;
-import ru.practicum.ewm.main.dto.UserShortDto;
-import ru.practicum.ewm.main.model.Category;
-import ru.practicum.ewm.main.model.Event;
-import ru.practicum.ewm.main.model.EventState;
-import ru.practicum.ewm.main.model.Location;
-import ru.practicum.ewm.main.model.User;
+import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.main.dto.event.EventFullDto;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
+import ru.practicum.ewm.main.dto.event.LocationDto;
+import ru.practicum.ewm.main.dto.eventrequest.NewEventRequest;
+import ru.practicum.ewm.main.dto.user.UserShortDto;
+import ru.practicum.ewm.main.model.*;
 
 import java.time.LocalDateTime;
 
+@UtilityClass
 public class EventMapper {
 
     public static Event toEvent(NewEventRequest request, Category category, User initiator) {

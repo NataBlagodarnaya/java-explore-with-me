@@ -8,17 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.main.model.Event;
+import ru.practicum.ewm.main.util.DateTimeConstants;
 import ru.practicum.ewm.stats.client.StatsClient;
 import ru.practicum.ewm.stats.dto.EndpointHitDto;
 import ru.practicum.ewm.stats.dto.ViewStatsDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -27,7 +24,7 @@ public class EventStatsService {
 
     private static final String APP_NAME = "ewm-main-service";
     private static final String EVENTS_URI = "/events/";
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern(DateTimeConstants.DATE_TIME_PATTERN);
 
     private final StatsClient statsClient;
     private final ObjectMapper objectMapper;
@@ -65,7 +62,7 @@ public class EventStatsService {
                     LocalDateTime.now().format(FORMATTER), uris, true);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 List<ViewStatsDto> stats = objectMapper.convertValue(response.getBody(),
-                        new TypeReference<List<ViewStatsDto>>() { });
+                        new TypeReference<>() { });
                 for (ViewStatsDto stat : stats) {
                     views.put(Long.parseLong(stat.getUri().substring(EVENTS_URI.length())), stat.getHits());
                 }

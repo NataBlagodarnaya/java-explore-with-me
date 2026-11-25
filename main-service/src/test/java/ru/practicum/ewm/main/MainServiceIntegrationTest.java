@@ -14,10 +14,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.main.dto.CategoryRequest;
-import ru.practicum.ewm.main.dto.LocationDto;
-import ru.practicum.ewm.main.dto.NewEventRequest;
-import ru.practicum.ewm.main.dto.UserRequest;
+import ru.practicum.ewm.main.dto.category.CategoryRequest;
+import ru.practicum.ewm.main.dto.event.LocationDto;
+import ru.practicum.ewm.main.dto.eventrequest.NewEventRequest;
+import ru.practicum.ewm.main.dto.user.UserRequest;
 import ru.practicum.ewm.stats.client.StatsClient;
 
 import java.nio.charset.StandardCharsets;

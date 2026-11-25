@@ -1,14 +1,16 @@
 package ru.practicum.ewm.main.mapper;
 
-import ru.practicum.ewm.main.dto.CompilationDto;
-import ru.practicum.ewm.main.dto.EventShortDto;
-import ru.practicum.ewm.main.dto.NewCompilationRequest;
+import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.main.dto.compilation.CompilationDto;
+import ru.practicum.ewm.main.dto.compilation.NewCompilationRequest;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
 import ru.practicum.ewm.main.model.Compilation;
 import ru.practicum.ewm.main.model.Event;
 
 import java.util.List;
 import java.util.Set;
 
+@UtilityClass
 public class CompilationMapper {
 
     public static Compilation toCompilation(NewCompilationRequest request, Set<Event> events) {

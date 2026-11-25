@@ -5,12 +5,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.ewm.main.dto.EventFullDto;
-import ru.practicum.ewm.main.dto.EventShortDto;
-import ru.practicum.ewm.main.dto.LocationDto;
-import ru.practicum.ewm.main.dto.NewEventRequest;
-import ru.practicum.ewm.main.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.main.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.main.dto.event.EventFullDto;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
+import ru.practicum.ewm.main.dto.event.LocationDto;
+import ru.practicum.ewm.main.dto.eventrequest.NewEventRequest;
+import ru.practicum.ewm.main.dto.event.UpdateEventAdminRequest;
+import ru.practicum.ewm.main.dto.event.UpdateEventUserRequest;
 import ru.practicum.ewm.main.exception.BadRequestException;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
@@ -27,14 +27,18 @@ import ru.practicum.ewm.main.repository.EventRepository;
 import ru.practicum.ewm.main.repository.RequestRepository;
 import ru.practicum.ewm.main.repository.UserRepository;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import ru.practicum.ewm.main.model.RequestStatus;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -122,6 +126,42 @@ class EventServiceImplTest {
     }
 
     @Test
+    void getUserEvents_shouldReturnPageWithConfirmedAndViews() {
+        Event event = createEvent(1L, EventState.PENDING, LocalDateTime.now().plusDays(2));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
+        when(eventRepository.findAllByInitiatorIdWithOffset(1L, 0, 10)).thenReturn(List.of(event));
+        when(requestRepository.countConfirmedByEventIds(any())).thenReturn(Map.of(1L, 2L));
+        when(eventStatsService.getViews(any())).thenReturn(Map.of(1L, 7L));
+
+        List<EventShortDto> result = eventService.getUserEvents(1L, 0, 10);
+
+        assertEquals(1, result.size());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(0).getConfirmedRequests());
+        assertEquals(7L, result.get(0).getViews());
+    }
+
+    @Test
+    void getUserEvents_shouldPassFromAndSizeToRepository() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
+        when(eventRepository.findAllByInitiatorIdWithOffset(1L, 5, 3)).thenReturn(List.of());
+
+        List<EventShortDto> result = eventService.getUserEvents(1L, 5, 3);
+
+        assertTrue(result.isEmpty());
+        verify(eventRepository).findAllByInitiatorIdWithOffset(1L, 5, 3);
+    }
+
+    @Test
+    void getUserEvents_shouldThrowNotFound_whenUserDoesNotExist() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> eventService.getUserEvents(1L, 0, 10));
+
+        verify(eventRepository, never()).findAllByInitiatorIdWithOffset(any(), anyInt(), anyInt());
+    }
+
+    @Test
     void updateUserEvent_shouldThrowConflict_whenEventIsPublished() {
         Event event = createEvent(5L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
         when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
@@ -179,7 +219,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldPublishEvent_whenEventIsPending() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.PUBLISH_EVENT);
 
@@ -192,7 +232,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldThrowConflict_whenPublishingNotPendingEvent() {
         Event event = createEvent(5L, EventState.CANCELED, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.PUBLISH_EVENT);
 
@@ -204,7 +244,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldThrowConflict_whenPublicationDateIsLessThanOneHourAway() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusMinutes(30));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.PUBLISH_EVENT);
 
@@ -214,7 +254,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldRejectEvent_whenEventIsPending() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.REJECT_EVENT);
 
@@ -226,7 +266,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldThrowConflict_whenRejectingPublishedEvent() {
         Event event = createEvent(5L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.REJECT_EVENT);
 
@@ -237,7 +277,7 @@ class EventServiceImplTest {
 
     @Test
     void updateEventByAdmin_shouldThrowNotFound_whenEventDoesNotExist() {
-        when(eventRepository.findById(5L)).thenReturn(Optional.empty());
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class,
                 () -> eventService.updateEventByAdmin(5L, new UpdateEventAdminRequest()));
@@ -252,6 +292,34 @@ class EventServiceImplTest {
                 () -> eventService.getEventsByAdmin(null, null, null, start, end, 0, 10));
     }
 
+    @Test
+    void getEventsByAdmin_shouldPassNeutralValuesToRepository_whenFiltersAreNotPassed() {
+        when(eventRepository.findAllByAdminFilters(anyBoolean(), any(), anyBoolean(), any(), anyBoolean(),
+                any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of());
+
+        eventService.getEventsByAdmin(null, null, null, null, null, 3, 4);
+
+        verify(eventRepository).findAllByAdminFilters(eq(true), eq(List.of(-1L)), eq(true),
+                eq(List.of(EventState.PENDING)), eq(true), eq(List.of(-1L)),
+                eq(LocalDateTime.of(2026, 11, 20, 0, 0)),
+                eq(LocalDateTime.of(9999, 12, 31, 23, 59, 59)), eq(3), eq(4));
+    }
+
+    @Test
+    void getEventsByAdmin_shouldReturnEventsWithConfirmedAndViews() {
+        Event event = createEvent(1L, EventState.PENDING, LocalDateTime.now().plusDays(2));
+        when(eventRepository.findAllByAdminFilters(anyBoolean(), any(), anyBoolean(), any(), anyBoolean(),
+                any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(event));
+        when(requestRepository.countConfirmedByEventIds(any())).thenReturn(Map.of(1L, 3L));
+        when(eventStatsService.getViews(any())).thenReturn(Map.of(1L, 9L));
+
+        List<EventFullDto> result = eventService.getEventsByAdmin(List.of(1L), List.of(EventState.PENDING),
+                List.of(2L), null, null, 0, 10);
+
+        assertEquals(1, result.size());
+        assertEquals(3L, result.get(0).getConfirmedRequests());
+        assertEquals(9L, result.get(0).getViews());
+    }
 
     @Test
     void getPublicEvents_shouldThrowBadRequest_whenRangeEndIsBeforeRangeStart() {
@@ -263,55 +331,74 @@ class EventServiceImplTest {
     }
 
     @Test
-    void getPublicEvents_shouldReturnOnlyPublishedEventsMatchingTextIgnoringCase() {
-        Event matching = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
-        Event otherText = createEvent(2L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
-        otherText.setAnnotation("Выставка современного искусства");
-        otherText.setDescription("Работы молодых художников");
-        Event notPublished = createEvent(3L, EventState.PENDING, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findAll()).thenReturn(List.of(matching, otherText, notPublished));
+    void getPublicEvents_shouldReturnPageWithConfirmedAndViews_whenSortIsNotViews() {
+        Event event = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
+        when(eventRepository.findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(event));
+        when(requestRepository.countConfirmedByEventIds(any())).thenReturn(Map.of(1L, 2L));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(1L, 7L));
 
-        List<EventShortDto> result = eventService.getPublicEvents("КОНЦЕРТ", null, null, null, null,
+        List<EventShortDto> result = eventService.getPublicEvents(null, null, null, null, null,
                 false, null, 0, 10);
 
         assertEquals(1, result.size());
         assertEquals(1L, result.get(0).getId());
+        assertEquals(2L, result.get(0).getConfirmedRequests());
         assertEquals(7L, result.get(0).getViews());
     }
 
     @Test
-    void getPublicEvents_shouldSortByViewsDescending_whenSortIsViews() {
+    void getPublicEvents_shouldSortByViewsDescendingAndCutPage_whenSortIsViews() {
         Event first = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
         Event second = createEvent(2L, EventState.PUBLISHED, LocalDateTime.now().plusDays(3));
-        when(eventRepository.findAll()).thenReturn(List.of(first, second));
-        when(eventStatsService.getViews(any())).thenReturn(Map.of(1L, 1L, 2L, 5L));
+        Event third = createEvent(3L, EventState.PUBLISHED, LocalDateTime.now().plusDays(4));
+        when(eventRepository.findPublicEvents(any(), anyBoolean(), anyString(), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any()))
+                .thenReturn(List.of(first, second, third));
+        when(eventStatsService.getViews(any())).thenReturn(Map.of(1L, 1L, 2L, 5L, 3L, 3L));
 
         List<EventShortDto> result = eventService.getPublicEvents(null, null, null, null, null,
-                false, EventSort.VIEWS, 0, 10);
+                false, EventSort.VIEWS, 1, 1);
 
-        assertEquals(2L, result.get(0).getId());
-        assertEquals(1L, result.get(1).getId());
+        assertEquals(1, result.size());
+        assertEquals(3L, result.get(0).getId());
     }
 
     @Test
-    void getPublicEvents_shouldSortByEventDate_whenSortIsNotPassed() {
-        Event later = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(5));
+    void getPublicEvents_shouldKeepRepositoryOrderAndPassPaging_whenSortIsEventDate() {
         Event earlier = createEvent(2L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findAll()).thenReturn(List.of(later, earlier));
-        when(eventStatsService.getViews(any())).thenReturn(Map.of());
+        Event later = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(5));
+        when(eventRepository.findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of(earlier, later));
 
         List<EventShortDto> result = eventService.getPublicEvents(null, null, null, null, null,
-                false, null, 0, 10);
+                false, EventSort.EVENT_DATE, 2, 5);
 
         assertEquals(2L, result.get(0).getId());
         assertEquals(1L, result.get(1).getId());
+        verify(eventRepository).findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), eq(2), eq(5));
+    }
+
+    @Test
+    void getPublicEvents_shouldPassLowerCasePatternAndNeutralValues_whenOnlyTextIsPassed() {
+        when(eventRepository.findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
+                anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of());
+
+        eventService.getPublicEvents("КОНЦЕРТ", null, null, null, null, false, null, 0, 10);
+
+        verify(eventRepository).findPublicEventsPage(eq(EventState.PUBLISHED), eq(false), eq("%концерт%"),
+                eq(true), eq(List.of(-1L)), eq(true), eq(false), any(), any(), eq(false),
+                eq(RequestStatus.CONFIRMED), eq(0), eq(10));
     }
 
     @Test
     void getPublicEvent_shouldThrowNotFound_whenEventIsNotPublished() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
 
         assertThrows(NotFoundException.class, () -> eventService.getPublicEvent(5L));
     }
@@ -319,7 +406,7 @@ class EventServiceImplTest {
     @Test
     void getPublicEvent_shouldReturnEventWithViews_whenEventIsPublished() {
         Event event = createEvent(5L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(5L, 3L));
 
         EventFullDto result = eventService.getPublicEvent(5L);
@@ -394,7 +481,7 @@ class EventServiceImplTest {
     @Test
     void updateEventByAdmin_shouldThrowBadRequest_whenNewDateIsInThePast() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
-        when(eventRepository.findById(5L)).thenReturn(Optional.of(event));
+        when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setEventDate(LocalDateTime.now().minusDays(1));
 

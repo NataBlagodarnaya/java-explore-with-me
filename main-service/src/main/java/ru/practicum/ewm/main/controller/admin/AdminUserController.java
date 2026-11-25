@@ -1,15 +1,17 @@
 package ru.practicum.ewm.main.controller.admin;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.main.dto.UserDto;
-import ru.practicum.ewm.main.dto.UserRequest;
+import ru.practicum.ewm.main.dto.user.UserDto;
+import ru.practicum.ewm.main.dto.user.UserRequest;
 import ru.practicum.ewm.main.service.UserService;
+
 import java.util.List;
 
 @Slf4j
@@ -24,7 +26,7 @@ public class AdminUserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto register(@Valid @RequestBody UserRequest request) {
-        log.info("Регистрация пользователя {}", request.getEmail());
+        log.info("Регистрация пользователя {}", request);
         return userService.register(request);
     }
 

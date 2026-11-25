@@ -3,15 +3,10 @@ package ru.practicum.ewm.main.controller.priv;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateDto;
-import ru.practicum.ewm.main.dto.ParticipationRequestDto;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateDto;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.dto.eventrequest.ParticipationRequestDto;
 import ru.practicum.ewm.main.service.RequestService;
 
 import java.util.List;
@@ -35,7 +30,7 @@ public class PrivateEventRequestController {
     public EventRequestStatusUpdateDto updateRequestStatus(@PathVariable Long userId,
                                                            @PathVariable Long eventId,
                                                            @Valid @RequestBody EventRequestStatusUpdateRequest request) {
-        log.info("Изменение статуса заявок на участие в событии {} пользователем {}", eventId, userId);
+        log.info("Изменение статуса заявок на участие в событии {} пользователем {}: {}", eventId, userId, request);
         return requestService.updateRequestStatus(userId, eventId, request);
     }
 }

@@ -1,45 +1,50 @@
-package ru.practicum.ewm.main.dto;
+package ru.practicum.ewm.main.dto.eventrequest;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import ru.practicum.ewm.main.model.UserStateAction;
+import ru.practicum.ewm.main.dto.event.LocationDto;
+import ru.practicum.ewm.main.util.DateTimeConstants;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateEventUserRequest {
+public class NewEventRequest {
+    @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
 
+    @NotNull
     private Long category;
 
+    @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @NotNull
+    @JsonFormat(pattern = DateTimeConstants.DATE_TIME_PATTERN)
     private LocalDateTime eventDate;
 
+    @NotNull
     @Valid
     private LocationDto location;
 
-    private Boolean paid;
+    private Boolean paid = false;
 
     @PositiveOrZero
-    private Integer participantLimit;
+    private Integer participantLimit = 0;
 
-    private Boolean requestModeration;
+    private Boolean requestModeration = true;
 
-    private UserStateAction stateAction;
-
+    @NotBlank
     @Size(min = 3, max = 120)
     private String title;
 }

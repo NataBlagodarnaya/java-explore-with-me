@@ -5,9 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.ewm.main.dto.CompilationDto;
-import ru.practicum.ewm.main.dto.NewCompilationRequest;
-import ru.practicum.ewm.main.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.main.dto.compilation.CompilationDto;
+import ru.practicum.ewm.main.dto.compilation.NewCompilationRequest;
+import ru.practicum.ewm.main.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
@@ -56,7 +56,7 @@ class CompilationServiceImplTest {
     void saveCompilation_shouldSaveCompilationWithEvents() {
         Event event = createEvent(10L);
         when(compilationRepository.existsByTitle("Летние концерты")).thenReturn(false);
-        when(eventRepository.findById(10L)).thenReturn(Optional.of(event));
+        when(eventRepository.findAllByIdsWithDetails(Set.of(10L))).thenReturn(List.of(event));
         mockSave();
 
         CompilationDto result = compilationService.saveCompilation(
@@ -94,7 +94,7 @@ class CompilationServiceImplTest {
     @Test
     void saveCompilation_shouldThrowNotFound_whenEventDoesNotExist() {
         when(compilationRepository.existsByTitle("Летние концерты")).thenReturn(false);
-        when(eventRepository.findById(10L)).thenReturn(Optional.empty());
+        when(eventRepository.findAllByIdsWithDetails(Set.of(10L))).thenReturn(List.of());
 
         assertThrows(NotFoundException.class, () -> compilationService.saveCompilation(
                 new NewCompilationRequest(Set.of(10L), false, "Летние концерты")));
@@ -104,7 +104,7 @@ class CompilationServiceImplTest {
 
     @Test
     void deleteCompilation_shouldDeleteCompilation_whenItExists() {
-        when(compilationRepository.findById(1L))
+        when(compilationRepository.findByIdWithEvents(1L))
                 .thenReturn(Optional.of(createCompilation(1L, "Летние концерты", true)));
 
         compilationService.deleteCompilation(1L);
@@ -114,7 +114,7 @@ class CompilationServiceImplTest {
 
     @Test
     void deleteCompilation_shouldThrowNotFound_whenCompilationDoesNotExist() {
-        when(compilationRepository.findById(1L)).thenReturn(Optional.empty());
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> compilationService.deleteCompilation(1L));
 
@@ -124,7 +124,7 @@ class CompilationServiceImplTest {
     @Test
     void updateCompilation_shouldChangeOnlyPassedFields() {
         Compilation compilation = createCompilation(1L, "Летние концерты", true);
-        when(compilationRepository.findById(1L)).thenReturn(Optional.of(compilation));
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
         when(compilationRepository.existsByTitleAndIdNot("Зимние концерты", 1L)).thenReturn(false);
 
         CompilationDto result = compilationService.updateCompilation(1L,
@@ -138,8 +138,8 @@ class CompilationServiceImplTest {
     void updateCompilation_shouldReplaceEvents_whenEventsArePassed() {
         Compilation compilation = createCompilation(1L, "Летние концерты", true);
         compilation.setEvents(new HashSet<>(Set.of(createEvent(10L))));
-        when(compilationRepository.findById(1L)).thenReturn(Optional.of(compilation));
-        when(eventRepository.findById(20L)).thenReturn(Optional.of(createEvent(20L)));
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
+        when(eventRepository.findAllByIdsWithDetails(Set.of(20L))).thenReturn(List.of(createEvent(20L)));
 
         CompilationDto result = compilationService.updateCompilation(1L,
                 new UpdateCompilationRequest(Set.of(20L), null, null));
@@ -152,7 +152,7 @@ class CompilationServiceImplTest {
     void updateCompilation_shouldClearEvents_whenEmptySetIsPassed() {
         Compilation compilation = createCompilation(1L, "Летние концерты", true);
         compilation.setEvents(new HashSet<>(Set.of(createEvent(10L))));
-        when(compilationRepository.findById(1L)).thenReturn(Optional.of(compilation));
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
 
         CompilationDto result = compilationService.updateCompilation(1L,
                 new UpdateCompilationRequest(Set.of(), null, null));
@@ -163,7 +163,7 @@ class CompilationServiceImplTest {
     @Test
     void updateCompilation_shouldThrowConflict_whenTitleIsTakenByAnotherCompilation() {
         Compilation compilation = createCompilation(1L, "Летние концерты", true);
-        when(compilationRepository.findById(1L)).thenReturn(Optional.of(compilation));
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
         when(compilationRepository.existsByTitleAndIdNot("Зимние концерты", 1L)).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> compilationService.updateCompilation(1L,
@@ -174,71 +174,66 @@ class CompilationServiceImplTest {
 
     @Test
     void updateCompilation_shouldThrowNotFound_whenCompilationDoesNotExist() {
-        when(compilationRepository.findById(1L)).thenReturn(Optional.empty());
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> compilationService.updateCompilation(1L,
                 new UpdateCompilationRequest(null, true, null)));
     }
 
     @Test
-    void getCompilations_shouldReturnAllSortedById_whenPinnedIsNotPassed() {
+    void getCompilations_shouldReturnCompilationsOfFoundIds() {
         Compilation first = createCompilation(1L, "Первая", true);
         Compilation second = createCompilation(2L, "Вторая", false);
-        Compilation third = createCompilation(3L, "Третья", true);
-        when(compilationRepository.findAll()).thenReturn(List.of(third, first, second));
+        when(compilationRepository.findIdsWithOffset(true, false, 0, 10)).thenReturn(List.of(1L, 2L));
+        when(compilationRepository.findAllWithEventsByIds(List.of(1L, 2L))).thenReturn(List.of(first, second));
 
         List<CompilationDto> result = compilationService.getCompilations(null, 0, 10);
 
-        assertEquals(3, result.size());
+        assertEquals(2, result.size());
         assertEquals(1L, result.get(0).getId());
         assertEquals(2L, result.get(1).getId());
-        assertEquals(3L, result.get(2).getId());
     }
 
     @Test
-    void getCompilations_shouldReturnOnlyPinned_whenPinnedIsTrue() {
+    void getCompilations_shouldPassPinnedTrueToRepository() {
         Compilation first = createCompilation(1L, "Первая", true);
-        Compilation second = createCompilation(2L, "Вторая", false);
-        Compilation third = createCompilation(3L, "Третья", true);
-        when(compilationRepository.findAll()).thenReturn(List.of(first, second, third));
+        when(compilationRepository.findIdsWithOffset(false, true, 0, 10)).thenReturn(List.of(1L));
+        when(compilationRepository.findAllWithEventsByIds(List.of(1L))).thenReturn(List.of(first));
 
         List<CompilationDto> result = compilationService.getCompilations(true, 0, 10);
 
-        assertEquals(2, result.size());
-        assertEquals(1L, result.get(0).getId());
-        assertEquals(3L, result.get(1).getId());
+        assertEquals(1, result.size());
+        assertTrue(result.get(0).isPinned());
     }
 
     @Test
-    void getCompilations_shouldReturnOnlyNotPinned_whenPinnedIsFalse() {
-        Compilation first = createCompilation(1L, "Первая", true);
+    void getCompilations_shouldPassPinnedFalseToRepository() {
         Compilation second = createCompilation(2L, "Вторая", false);
-        when(compilationRepository.findAll()).thenReturn(List.of(first, second));
+        when(compilationRepository.findIdsWithOffset(false, false, 0, 10)).thenReturn(List.of(2L));
+        when(compilationRepository.findAllWithEventsByIds(List.of(2L))).thenReturn(List.of(second));
 
         List<CompilationDto> result = compilationService.getCompilations(false, 0, 10);
 
         assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
+        assertFalse(result.get(0).isPinned());
     }
 
     @Test
-    void getCompilations_shouldCutPage_whenFromIsNotMultipleOfSize() {
-        Compilation first = createCompilation(1L, "Первая", true);
-        Compilation second = createCompilation(2L, "Вторая", true);
-        Compilation third = createCompilation(3L, "Третья", true);
-        when(compilationRepository.findAll()).thenReturn(List.of(first, second, third));
+    void getCompilations_shouldPassFromAndSizeToRepository() {
+        when(compilationRepository.findIdsWithOffset(true, false, 5, 3)).thenReturn(List.of());
 
-        List<CompilationDto> result = compilationService.getCompilations(null, 1, 1);
+        List<CompilationDto> result = compilationService.getCompilations(null, 5, 3);
 
-        assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
+        assertTrue(result.isEmpty());
+        verify(compilationRepository).findIdsWithOffset(true, false, 5, 3);
+        verify(compilationRepository, never()).findAllWithEventsByIds(any());
     }
 
     @Test
     void getCompilation_shouldReturnCompilationWithViews() {
         Compilation compilation = createCompilation(1L, "Летние концерты", true);
         compilation.setEvents(new HashSet<>(Set.of(createEvent(10L))));
-        when(compilationRepository.findById(1L)).thenReturn(Optional.of(compilation));
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(10L, 4L));
 
         CompilationDto result = compilationService.getCompilation(1L);
@@ -249,7 +244,7 @@ class CompilationServiceImplTest {
 
     @Test
     void getCompilation_shouldThrowNotFound_whenCompilationDoesNotExist() {
-        when(compilationRepository.findById(1L)).thenReturn(Optional.empty());
+        when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> compilationService.getCompilation(1L));
     }

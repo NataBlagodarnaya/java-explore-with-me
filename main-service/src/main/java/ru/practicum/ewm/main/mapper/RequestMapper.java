@@ -1,8 +1,10 @@
 package ru.practicum.ewm.main.mapper;
 
-import ru.practicum.ewm.main.dto.ParticipationRequestDto;
+import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.main.dto.eventrequest.ParticipationRequestDto;
 import ru.practicum.ewm.main.model.ParticipationRequest;
 
+@UtilityClass
 public class RequestMapper {
 
     public static ParticipationRequestDto toParticipationRequestDto(ParticipationRequest request) {

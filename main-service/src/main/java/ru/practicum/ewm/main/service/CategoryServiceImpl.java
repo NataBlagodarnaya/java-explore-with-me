@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.main.dto.CategoryDto;
-import ru.practicum.ewm.main.dto.CategoryRequest;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
+import ru.practicum.ewm.main.dto.category.CategoryRequest;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.CategoryMapper;
@@ -13,7 +13,6 @@ import ru.practicum.ewm.main.model.Category;
 import ru.practicum.ewm.main.repository.CategoryRepository;
 import ru.practicum.ewm.main.repository.EventRepository;
 
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -62,10 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getAll(int from, int size) {
-        return categoryRepository.findAll().stream()
-                .sorted(Comparator.comparing(Category::getId))
-                .skip(from)
-                .limit(size)
+        return categoryRepository.findAllWithOffset(from, size).stream()
                 .map(CategoryMapper::toCategoryDto)
                 .toList();
     }

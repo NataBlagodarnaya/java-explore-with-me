@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.ewm.main.dto.UserDto;
-import ru.practicum.ewm.main.dto.UserRequest;
+import ru.practicum.ewm.main.dto.user.UserDto;
+import ru.practicum.ewm.main.dto.user.UserRequest;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.model.User;
@@ -59,11 +59,9 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUsers_shouldReturnAllSortedAndCut_whenIdsNotPassed() {
-        User first = User.builder().id(1L).name("Первый").email("first@practicummail.ru").build();
+    void getUsers_shouldReturnPageFromRepository_whenIdsNotPassed() {
         User second = User.builder().id(2L).name("Второй").email("second@practicummail.ru").build();
-        User third = User.builder().id(3L).name("Третий").email("third@practicummail.ru").build();
-        when(userRepository.findAll()).thenReturn(List.of(third, first, second));
+        when(userRepository.findAllWithOffset(1, 1)).thenReturn(List.of(second));
 
         List<UserDto> result = userService.getUsers(null, 1, 1);
 
@@ -72,9 +70,9 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUsers_shouldReturnOnlyRequested_whenIdsPassed() {
+    void getUsers_shouldReturnOnlyRequestedPage_whenIdsPassed() {
         User first = User.builder().id(1L).name("Первый").email("first@practicummail.ru").build();
-        when(userRepository.findAllById(List.of(1L))).thenReturn(List.of(first));
+        when(userRepository.findAllByIdsWithOffset(List.of(1L), 0, 10)).thenReturn(List.of(first));
 
         List<UserDto> result = userService.getUsers(List.of(1L), 0, 10);
 

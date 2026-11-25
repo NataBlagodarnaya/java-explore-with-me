@@ -4,26 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateDto;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.main.dto.ParticipationRequestDto;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateDto;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.dto.eventrequest.ParticipationRequestDto;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.RequestMapper;
-import ru.practicum.ewm.main.model.Event;
-import ru.practicum.ewm.main.model.EventState;
-import ru.practicum.ewm.main.model.ParticipationRequest;
-import ru.practicum.ewm.main.model.RequestStatus;
-import ru.practicum.ewm.main.model.User;
+import ru.practicum.ewm.main.model.*;
 import ru.practicum.ewm.main.repository.EventRepository;
 import ru.practicum.ewm.main.repository.RequestRepository;
 import ru.practicum.ewm.main.repository.UserRepository;
-import ru.practicum.ewm.main.model.RequestUpdateStatus;
-import java.time.temporal.ChronoUnit;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -162,10 +157,17 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private List<ParticipationRequest> findEventRequests(Long eventId, List<Long> requestIds) {
-        return requestIds.stream()
-                .distinct()
-                .map(id -> requestRepository.findByIdAndEventId(id, eventId)
-                        .orElseThrow(() -> new NotFoundException("Request with id=" + id + " was not found")))
+        Set<Long> uniqueIds = new HashSet<>(requestIds);
+        List<ParticipationRequest> found = requestRepository.findAllByEventIdAndIdIn(eventId, uniqueIds);
+        Set<Long> foundIds = found.stream()
+                .map(ParticipationRequest::getId)
+                .collect(Collectors.toSet());
+        for (Long id : uniqueIds) {
+            if (!foundIds.contains(id)) {
+                throw new NotFoundException("Request with id=" + id + " was not found");
+            }
+        }
+        return found.stream()
                 .sorted(Comparator.comparing(ParticipationRequest::getId))
                 .toList();
     }

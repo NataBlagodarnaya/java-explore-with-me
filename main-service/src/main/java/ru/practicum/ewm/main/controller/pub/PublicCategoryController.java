@@ -1,12 +1,14 @@
 package ru.practicum.ewm.main.controller.pub;
 
-import jakarta.validation.constraints.*;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.practicum.ewm.main.dto.CategoryDto;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
 import ru.practicum.ewm.main.service.CategoryService;
+
 import java.util.List;
 
 @Slf4j

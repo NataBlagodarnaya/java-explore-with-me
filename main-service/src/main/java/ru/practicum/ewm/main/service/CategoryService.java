@@ -1,7 +1,8 @@
 package ru.practicum.ewm.main.service;
 
-import ru.practicum.ewm.main.dto.CategoryDto;
-import ru.practicum.ewm.main.dto.CategoryRequest;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
+import ru.practicum.ewm.main.dto.category.CategoryRequest;
+
 import java.util.List;
 
 public interface CategoryService {

@@ -4,15 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.main.dto.UserDto;
-import ru.practicum.ewm.main.dto.UserRequest;
+import ru.practicum.ewm.main.dto.user.UserDto;
+import ru.practicum.ewm.main.dto.user.UserRequest;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.mapper.UserMapper;
 import ru.practicum.ewm.main.model.User;
 import ru.practicum.ewm.main.repository.UserRepository;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
@@ -37,12 +36,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         List<User> users = (ids == null || ids.isEmpty())
-                ? userRepository.findAll()
-                : userRepository.findAllById(ids);
+                ? userRepository.findAllWithOffset(from, size)
+                : userRepository.findAllByIdsWithOffset(ids, from, size);
         return users.stream()
-                .sorted(Comparator.comparing(User::getId))
-                .skip(from)
-                .limit(size)
                 .map(UserMapper::toUserDto)
                 .toList();
     }

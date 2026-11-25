@@ -1,13 +1,11 @@
-package ru.practicum.ewm.main.dto;
+package ru.practicum.ewm.main.dto.event;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class LocationDto {

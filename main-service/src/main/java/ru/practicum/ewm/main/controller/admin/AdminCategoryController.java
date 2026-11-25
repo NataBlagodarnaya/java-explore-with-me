@@ -5,7 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.main.dto.*;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
+import ru.practicum.ewm.main.dto.category.CategoryRequest;
 import ru.practicum.ewm.main.service.CategoryService;
 
 @Slf4j
@@ -19,14 +20,14 @@ public class AdminCategoryController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto create(@Valid @RequestBody CategoryRequest request) {
-        log.info("Добавление категории {}", request.getName());
+        log.info("Добавление категории {}", request);
         return categoryService.create(request);
     }
 
     @PatchMapping("/{catId}")
     public CategoryDto update(@PathVariable Long catId,
                               @Valid @RequestBody CategoryRequest request) {
-        log.info("Изменение названия на {}", request.getName());
+        log.info("Изменение категории {}: {}", catId, request);
         return categoryService.update(catId, request);
     }
 

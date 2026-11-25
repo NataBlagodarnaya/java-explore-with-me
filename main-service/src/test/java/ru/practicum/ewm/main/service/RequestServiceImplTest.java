@@ -5,9 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateDto;
-import ru.practicum.ewm.main.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.main.dto.ParticipationRequestDto;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateDto;
+import ru.practicum.ewm.main.dto.eventrequest.EventRequestStatusUpdateRequest;
+import ru.practicum.ewm.main.dto.eventrequest.ParticipationRequestDto;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Event;
@@ -23,6 +23,7 @@ import ru.practicum.ewm.main.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -212,7 +213,7 @@ class RequestServiceImplTest {
         Event event = createEvent(EventState.PUBLISHED, 2, true);
         ParticipationRequest request = createRequest(11L, event, RequestStatus.PENDING);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(11L, 5L)).thenReturn(Optional.of(request));
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(11L))).thenReturn(List.of(request));
         when(requestRepository.countByEventIdAndStatus(5L, RequestStatus.CONFIRMED)).thenReturn(0L);
 
         EventRequestStatusUpdateDto result = requestService.updateRequestStatus(1L, 5L,
@@ -229,7 +230,7 @@ class RequestServiceImplTest {
         ParticipationRequest confirmed = createRequest(11L, event, RequestStatus.PENDING);
         ParticipationRequest other = createRequest(12L, event, RequestStatus.PENDING);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(11L, 5L)).thenReturn(Optional.of(confirmed));
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(11L))).thenReturn(List.of(confirmed));
         when(requestRepository.countByEventIdAndStatus(5L, RequestStatus.CONFIRMED)).thenReturn(0L);
         when(requestRepository.findAllByEventIdAndStatus(5L, RequestStatus.PENDING)).thenReturn(List.of(other));
 
@@ -248,7 +249,7 @@ class RequestServiceImplTest {
         Event event = createEvent(EventState.PUBLISHED, 5, true);
         ParticipationRequest request = createRequest(11L, event, RequestStatus.PENDING);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(11L, 5L)).thenReturn(Optional.of(request));
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(11L))).thenReturn(List.of(request));
         when(requestRepository.countByEventIdAndStatus(5L, RequestStatus.CONFIRMED)).thenReturn(0L);
 
         EventRequestStatusUpdateDto result = requestService.updateRequestStatus(1L, 5L,
@@ -264,7 +265,7 @@ class RequestServiceImplTest {
         Event event = createEvent(EventState.PUBLISHED, 1, true);
         ParticipationRequest request = createRequest(11L, event, RequestStatus.PENDING);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(11L, 5L)).thenReturn(Optional.of(request));
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(11L))).thenReturn(List.of(request));
         when(requestRepository.countByEventIdAndStatus(5L, RequestStatus.CONFIRMED)).thenReturn(1L);
 
         assertThrows(ConflictException.class, () -> requestService.updateRequestStatus(1L, 5L,
@@ -276,7 +277,7 @@ class RequestServiceImplTest {
         Event event = createEvent(EventState.PUBLISHED, 5, true);
         ParticipationRequest request = createRequest(11L, event, RequestStatus.REJECTED);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(11L, 5L)).thenReturn(Optional.of(request));
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(11L))).thenReturn(List.of(request));
 
         assertThrows(ConflictException.class, () -> requestService.updateRequestStatus(1L, 5L,
                 createStatusRequest(List.of(11L), RequestUpdateStatus.CONFIRMED)));
@@ -286,7 +287,7 @@ class RequestServiceImplTest {
     void updateRequestStatus_shouldThrowNotFound_whenRequestDoesNotBelongToEvent() {
         Event event = createEvent(EventState.PUBLISHED, 5, true);
         mockOwnerAndEvent(event);
-        when(requestRepository.findByIdAndEventId(99L, 5L)).thenReturn(Optional.empty());
+        when(requestRepository.findAllByEventIdAndIdIn(5L, Set.of(99L))).thenReturn(List.of());
 
         assertThrows(NotFoundException.class, () -> requestService.updateRequestStatus(1L, 5L,
                 createStatusRequest(List.of(99L), RequestUpdateStatus.CONFIRMED)));
@@ -302,7 +303,7 @@ class RequestServiceImplTest {
 
         assertTrue(result.getConfirmedRequests().isEmpty());
         assertTrue(result.getRejectedRequests().isEmpty());
-        verify(requestRepository, never()).findByIdAndEventId(anyLong(), anyLong());
+        verify(requestRepository, never()).findAllByEventIdAndIdIn(anyLong(), any());
     }
 
     @Test

@@ -6,7 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.practicum.ewm.main.dto.CategoryDto;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.service.CategoryService;
 

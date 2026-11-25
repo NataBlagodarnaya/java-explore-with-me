@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.ewm.main.dto.EventFullDto;
-import ru.practicum.ewm.main.dto.EventShortDto;
-import ru.practicum.ewm.main.dto.NewEventRequest;
-import ru.practicum.ewm.main.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.main.dto.event.EventFullDto;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
+import ru.practicum.ewm.main.dto.event.UpdateEventUserRequest;
+import ru.practicum.ewm.main.dto.eventrequest.NewEventRequest;
 import ru.practicum.ewm.main.service.EventService;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class PrivateEventController {
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto addEvent(@PathVariable Long userId,
                                  @Valid @RequestBody NewEventRequest newEventRequest) {
-        log.info("Добавление события {} пользователем {}", newEventRequest.getTitle(), userId);
+        log.info("Добавление события {} пользователем {}", newEventRequest, userId);
         return eventService.addEvent(userId, newEventRequest);
     }
 
@@ -52,7 +52,7 @@ public class PrivateEventController {
     public EventFullDto updateUserEvent(@PathVariable Long userId,
                                         @PathVariable Long eventId,
                                         @Valid @RequestBody UpdateEventUserRequest request) {
-        log.info("Изменение пользователем {} события {}", userId, eventId);
+        log.info("Изменение пользователем {} события {}: {}", userId, eventId, request);
         return eventService.updateUserEvent(userId, eventId, request);
     }
 }

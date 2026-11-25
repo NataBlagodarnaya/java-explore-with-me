@@ -1,5 +1,6 @@
 package ru.practicum.ewm.main.controller.pub;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -7,18 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.main.dto.EventFullDto;
-import ru.practicum.ewm.main.dto.EventShortDto;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.ewm.main.dto.event.EventFullDto;
+import ru.practicum.ewm.main.dto.event.EventShortDto;
 import ru.practicum.ewm.main.model.EventSort;
 import ru.practicum.ewm.main.service.EventService;
-import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.ewm.main.service.EventStatsService;
-
+import ru.practicum.ewm.main.util.DateTimeConstants;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,8 +26,6 @@ import java.util.List;
 @Validated
 public class PublicEventController {
 
-    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
     private final EventService eventService;
     private final EventStatsService eventStatsService;
 
@@ -40,9 +34,9 @@ public class PublicEventController {
                                          @RequestParam(required = false) List<Long> categories,
                                          @RequestParam(required = false) Boolean paid,
                                          @RequestParam(required = false)
-                                         @DateTimeFormat(pattern = DATE_FORMAT) LocalDateTime rangeStart,
+                                         @DateTimeFormat(pattern = DateTimeConstants.DATE_TIME_PATTERN) LocalDateTime rangeStart,
                                          @RequestParam(required = false)
-                                         @DateTimeFormat(pattern = DATE_FORMAT) LocalDateTime rangeEnd,
+                                         @DateTimeFormat(pattern = DateTimeConstants.DATE_TIME_PATTERN) LocalDateTime rangeEnd,
                                          @RequestParam(defaultValue = "false") boolean onlyAvailable,
                                          @RequestParam(required = false) EventSort sort,
                                          @RequestParam(defaultValue = "0") @PositiveOrZero int from,

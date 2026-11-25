@@ -5,8 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import ru.practicum.ewm.main.dto.CategoryDto;
-import ru.practicum.ewm.main.dto.CategoryRequest;
+import ru.practicum.ewm.main.dto.category.CategoryDto;
+import ru.practicum.ewm.main.dto.category.CategoryRequest;
 import ru.practicum.ewm.main.exception.ConflictException;
 import ru.practicum.ewm.main.exception.NotFoundException;
 import ru.practicum.ewm.main.model.Category;
@@ -124,11 +124,9 @@ class CategoryServiceImplTest {
     }
 
     @Test
-    void getAll_shouldReturnSortedAndCut() {
-        Category first = Category.builder().id(1L).name("Первая").build();
+    void getAll_shouldReturnPageFromRepository() {
         Category second = Category.builder().id(2L).name("Вторая").build();
-        Category third = Category.builder().id(3L).name("Третья").build();
-        when(categoryRepository.findAll()).thenReturn(List.of(third, first, second));
+        when(categoryRepository.findAllWithOffset(1, 1)).thenReturn(List.of(second));
 
         List<CategoryDto> result = categoryService.getAll(1, 1);
 

@@ -86,7 +86,7 @@ class StatsControllerTest {
     @Test
     void getStats_shouldReturnBadRequest_whenValidationExceptionThrown() throws Exception {
         Mockito.when(statsService.getStats(anyString(), anyString(), any(), anyBoolean()))
-                .thenThrow(new ValidationException("Дата начала не может быть позже даты окончания"));
+                .thenThrow(new ValidationException("Start date must not be after end date"));
 
         mvc.perform(get("/stats")
                         .param("start", "2035-01-01 00:00:00")
@@ -95,6 +95,8 @@ class StatsControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Ошибка валидации: Дата начала не может быть позже даты окончания")));
+                .andExpect(jsonPath("$.status", is("BAD_REQUEST")))
+                .andExpect(jsonPath("$.reason", is("Incorrectly made request.")))
+                .andExpect(jsonPath("$.message", is("Start date must not be after end date")));
     }
 }

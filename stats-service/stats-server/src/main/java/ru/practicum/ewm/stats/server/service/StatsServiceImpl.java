@@ -12,6 +12,7 @@ import ru.practicum.ewm.stats.server.repository.StatsRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Service
@@ -20,8 +21,9 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class StatsServiceImpl implements StatsService {
 
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private final StatsRepository statsRepository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
@@ -31,7 +33,7 @@ public class StatsServiceImpl implements StatsService {
                 .app(hitDto.getApp())
                 .uri(hitDto.getUri())
                 .ip(hitDto.getIp())
-                .timestamp(LocalDateTime.parse(hitDto.getTimestamp(), formatter))
+                .timestamp(parseDate(hitDto.getTimestamp()))
                 .build();
         statsRepository.save(hit);
     }
@@ -39,25 +41,14 @@ public class StatsServiceImpl implements StatsService {
     @Override
     public List<ViewStatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
         if (start == null || end == null || start.isBlank() || end.isBlank()) {
-            throw new ValidationException(
-                    "Параметры start и end обязательны для заполнения и не могут быть пустыми"
-            );
+            throw new ValidationException("Parameters start and end are required and must not be blank");
         }
 
-        LocalDateTime startTime;
-        LocalDateTime endTime;
-
-        try {
-            startTime = LocalDateTime.parse(start, formatter);
-            endTime = LocalDateTime.parse(end, formatter);
-        } catch (Exception e) {
-            throw new ValidationException(
-                    "Неверный формат даты. Используйте формат: yyyy-MM-dd HH:mm:ss"
-            );
-        }
+        LocalDateTime startTime = parseDate(start);
+        LocalDateTime endTime = parseDate(end);
 
         if (startTime.isAfter(endTime)) {
-            throw new ValidationException("Дата начала не может быть позже даты окончания");
+            throw new ValidationException("Start date must not be after end date");
         }
 
         if (uris == null || uris.isEmpty()) {
@@ -70,12 +61,20 @@ public class StatsServiceImpl implements StatsService {
             }
         } else {
             if (unique) {
-                log.info("Получение статистики для указанных URI (только unique IP): {}", uris);
+                log.info("Получение статистики для указанных URI (только уникальные IP): {}", uris);
                 return statsRepository.getStatsByUrisUnique(startTime, endTime, uris);
             } else {
                 log.info("Получение статистики для указанных URI (все посещения): {}", uris);
                 return statsRepository.getStatsByUris(startTime, endTime, uris);
             }
+        }
+    }
+
+    private LocalDateTime parseDate(String value) {
+        try {
+            return LocalDateTime.parse(value, FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new ValidationException("Invalid date format, expected yyyy-MM-dd HH:mm:ss. Value: " + value);
         }
     }
 }

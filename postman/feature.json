@@ -1,0 +1,1070 @@
+{
+  "info": {
+    "_postman_id": "77042940-7503-4063-b499-dea2ee5978ab",
+    "name": "feature-subscriptions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "55318697",
+    "_collection_link": "https://go.postman.co/collection/55318697-77042940-7503-4063-b499-dea2ee5978ab?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Создание пользователя - подписчик",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = Date.now() + Math.floor(Math.random() * 1000);\npm.collectionVariables.set('subscriberName', 'Иван Петров ' + suffix);\npm.collectionVariables.set('subscriberEmail', 'ivan' + suffix + '@practicummail.ru');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Ответ содержит id и имя', function () {\n    const user = pm.response.json();\n    pm.expect(user.id).to.be.a('number');\n    pm.expect(user.name).to.eql(pm.collectionVariables.get('subscriberName'));\n    pm.collectionVariables.set('subscriberId', user.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{subscriberName}}\",\n  \"email\": \"{{subscriberEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/users",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание пользователя - автор Анна",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = Date.now() + Math.floor(Math.random() * 1000);\npm.collectionVariables.set('authorAName', 'Анна Иванова ' + suffix);\npm.collectionVariables.set('authorAEmail', 'anna' + suffix + '@practicummail.ru');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Ответ содержит id и имя', function () {\n    const user = pm.response.json();\n    pm.expect(user.id).to.be.a('number');\n    pm.expect(user.name).to.eql(pm.collectionVariables.get('authorAName'));\n    pm.collectionVariables.set('authorAId', user.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{authorAName}}\",\n  \"email\": \"{{authorAEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/users",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание пользователя - автор Борис",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = Date.now() + Math.floor(Math.random() * 1000);\npm.collectionVariables.set('authorBName', 'Борис Петров ' + suffix);\npm.collectionVariables.set('authorBEmail', 'boris' + suffix + '@practicummail.ru');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Ответ содержит id и имя', function () {\n    const user = pm.response.json();\n    pm.expect(user.id).to.be.a('number');\n    pm.expect(user.name).to.eql(pm.collectionVariables.get('authorBName'));\n    pm.collectionVariables.set('authorBId', user.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{authorBName}}\",\n  \"email\": \"{{authorBEmail}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/users",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание категории",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = Date.now() + Math.floor(Math.random() * 1000);\npm.collectionVariables.set('categoryName', 'Концерты ' + suffix);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Ответ содержит id и название', function () {\n    const category = pm.response.json();\n    pm.expect(category.id).to.be.a('number');\n    pm.expect(category.name).to.eql(pm.collectionVariables.get('categoryName'));\n    pm.collectionVariables.set('categoryId', category.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{categoryName}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/categories",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "categories"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание события - автор Анна, ближайшее",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const date = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);\nconst pad = (n) => String(n).padStart(2, '0');\nconst formatted = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1) + '-' + pad(date.getUTCDate())\n    + ' ' + pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds());\npm.collectionVariables.set('eventA1Date', formatted);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Событие создано в состоянии PENDING', function () {\n    const event = pm.response.json();\n    pm.expect(event.id).to.be.a('number');\n    pm.expect(event.state).to.eql('PENDING');\n    pm.expect(event.title).to.eql('Концерт Анны ранний');\n    pm.collectionVariables.set('eventA1Id', event.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"annotation\": \"Живой концерт под открытым небом для всей семьи\",\n  \"category\": {{categoryId}},\n  \"description\": \"Большой концерт на открытой площадке города с участием известных групп\",\n  \"eventDate\": \"{{eventA1Date}}\",\n  \"location\": {\n    \"lat\": 55.75,\n    \"lon\": 37.62\n  },\n  \"paid\": false,\n  \"participantLimit\": 0,\n  \"requestModeration\": true,\n  \"title\": \"Концерт Анны ранний\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/users/{{authorAId}}/events",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{authorAId}}",
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Публикация события - автор Анна, ближайшее",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('Событие опубликовано', function () {\n    const event = pm.response.json();\n    pm.expect(event.state).to.eql('PUBLISHED');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stateAction\": \"PUBLISH_EVENT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/events/{{eventA1Id}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "events",
+            "{{eventA1Id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание события - автор Анна, позднее",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const date = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);\nconst pad = (n) => String(n).padStart(2, '0');\nconst formatted = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1) + '-' + pad(date.getUTCDate()) + ' ' + pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds());\npm.collectionVariables.set('eventA2Date', formatted);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Событие создано', function () {\n    const event = pm.response.json();\n    pm.expect(event.title).to.eql('Концерт Анны поздний');\n    pm.expect(event.state).to.eql('PENDING');\n    pm.collectionVariables.set('eventA2Id', event.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"annotation\": \"Поздний концерт Анны с живой музыкой и хорошей программой\",\n  \"category\": {{categoryId}},\n  \"description\": \"Большой поздний концерт Анны, на котором прозвучат любимые композиции\",\n  \"eventDate\": \"{{eventA2Date}}\",\n  \"location\": {\n    \"lat\": 55.7558,\n    \"lon\": 37.6173\n  },\n  \"paid\": false,\n  \"participantLimit\": 0,\n  \"requestModeration\": false,\n  \"title\": \"Концерт Анны поздний\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/users/{{authorAId}}/events",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{authorAId}}",
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание события - автор Борис",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const date = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);\nconst pad = (n) => String(n).padStart(2, '0');\nconst formatted = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1) + '-' + pad(date.getUTCDate()) + ' ' + pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds());\npm.collectionVariables.set('eventB1Date', formatted);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Событие создано', function () {\n    const event = pm.response.json();\n    pm.expect(event.title).to.eql('Концерт Бориса');\n    pm.expect(event.state).to.eql('PENDING');\n    pm.collectionVariables.set('eventB1Id', event.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"annotation\": \"Концерт Бориса с живой музыкой и хорошей программой\",\n  \"category\": {{categoryId}},\n  \"description\": \"Большой концерт Бориса, на котором прозвучат любимые композиции\",\n  \"eventDate\": \"{{eventB1Date}}\",\n  \"location\": {\n    \"lat\": 55.7558,\n    \"lon\": 37.6173\n  },\n  \"paid\": false,\n  \"participantLimit\": 0,\n  \"requestModeration\": false,\n  \"title\": \"Концерт Бориса\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/users/{{authorBId}}/events",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{authorBId}}",
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Создание события - автор Анна, черновик",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const date = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000);\nconst pad = (n) => String(n).padStart(2, '0');\nconst formatted = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1) + '-' + pad(date.getUTCDate()) + ' ' + pad(date.getUTCHours()) + ':' + pad(date.getUTCMinutes()) + ':' + pad(date.getUTCSeconds());\npm.collectionVariables.set('eventA3Date', formatted);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Событие создано', function () {\n    const event = pm.response.json();\n    pm.expect(event.title).to.eql('Концерт Анны черновик');\n    pm.expect(event.state).to.eql('PENDING');\n    pm.collectionVariables.set('eventA3Id', event.id);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"annotation\": \"Черновик концерта Анны, который пока не опубликован\",\n  \"category\": {{categoryId}},\n  \"description\": \"Черновик концерта Анны, который не должен попасть в ленту подписок\",\n  \"eventDate\": \"{{eventA3Date}}\",\n  \"location\": {\n    \"lat\": 55.7558,\n    \"lon\": 37.6173\n  },\n  \"paid\": false,\n  \"participantLimit\": 0,\n  \"requestModeration\": false,\n  \"title\": \"Концерт Анны черновик\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/users/{{authorAId}}/events",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{authorAId}}",
+            "events"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Публикация события - автор Анна, позднее",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('Событие опубликовано', function () {\n    const event = pm.response.json();\n    pm.expect(event.state).to.eql('PUBLISHED');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stateAction\": \"PUBLISH_EVENT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/events/{{eventA2Id}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "events",
+            "{{eventA2Id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Публикация события - автор Борис",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('Событие опубликовано', function () {\n    const event = pm.response.json();\n    pm.expect(event.state).to.eql('PUBLISHED');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"stateAction\": \"PUBLISH_EVENT\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{mainUrl}}/admin/events/{{eventB1Id}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "events",
+            "{{eventB1Id}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Подписка на автора Анна",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Вернулся автор, на которого подписались', function () {\n    const author = pm.response.json();\n    pm.expect(author.id).to.eql(Number(pm.collectionVariables.get('authorAId')));\n    pm.expect(author.name).to.eql(pm.collectionVariables.get('authorAName'));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{authorAId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{authorAId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Подписка на автора Борис",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 201', function () {\n    pm.response.to.have.status(201);\n});\n\npm.test('Вернулся автор, на которого подписались', function () {\n    const author = pm.response.json();\n    pm.expect(author.id).to.eql(Number(pm.collectionVariables.get('authorBId')));\n    pm.expect(author.name).to.eql(pm.collectionVariables.get('authorBName'));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{authorBId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{authorBId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Повторная подписка на автора Анна",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 409', function () {\n    pm.response.to.have.status(409);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{authorAId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{authorAId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Подписка пользователя на самого себя",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 409', function () {\n    pm.response.to.have.status(409);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{subscriberId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{subscriberId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Подписка на несуществующего автора",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 404', function () {\n    pm.response.to.have.status(404);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/999999",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "999999"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение списка подписок",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('В списке два автора', function () {\n    const authors = pm.response.json();\n    pm.expect(authors).to.be.an('array');\n    pm.expect(authors.length).to.eql(2);\n    pm.expect(authors[0].id).to.eql(Number(pm.collectionVariables.get('authorAId')));\n    pm.expect(authors[1].id).to.eql(Number(pm.collectionVariables.get('authorBId')));\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение событий авторов, на которых подписан пользователь",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('В ленте три опубликованных события в нужном порядке', function () {\n    const events = pm.response.json();\n    pm.expect(events).to.be.an('array');\n    pm.expect(events.length).to.eql(3);\n    pm.expect(events[0].title).to.eql('Концерт Анны ранний');\n    pm.expect(events[1].title).to.eql('Концерт Анны поздний');\n    pm.expect(events[2].title).to.eql('Концерт Бориса');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/events?from=0&size=10",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение событий подписок с пропуском и размером страницы",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('На странице одно событие, второе по порядку', function () {\n    const events = pm.response.json();\n    pm.expect(events).to.be.an('array');\n    pm.expect(events.length).to.eql(1);\n    pm.expect(events[0].title).to.eql('Концерт Анны поздний');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/events?from=1&size=1",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "1"
+            },
+            {
+              "key": "size",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение событий подписок с отрицательным from",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 400', function () {\n    pm.response.to.have.status(400);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/events?from=-1&size=10",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "-1"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Отписка от автора Анна",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 204', function () {\n    pm.response.to.have.status(204);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{authorAId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{authorAId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Повторная отписка от автора Анна",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 404', function () {\n    pm.response.to.have.status(404);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/{{authorAId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "{{authorAId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение событий подписок после отписки от Анны",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('В ленте только событие Бориса', function () {\n    const events = pm.response.json();\n    pm.expect(events).to.be.an('array');\n    pm.expect(events.length).to.eql(1);\n    pm.expect(events[0].title).to.eql('Концерт Бориса');\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions/events?from=0&size=10",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions",
+            "events"
+          ],
+          "query": [
+            {
+              "key": "from",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Удаление пользователя - автор Борис",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 204', function () {\n    pm.response.to.have.status(204);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/admin/users/{{authorBId}}",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "admin",
+            "users",
+            "{{authorBId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Получение списка подписок после удаления автора",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Статус код 200', function () {\n    pm.response.to.have.status(200);\n});\n\npm.test('Список подписок пуст', function () {\n    const authors = pm.response.json();\n    pm.expect(authors).to.be.an('array');\n    pm.expect(authors.length).to.eql(0);\n});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mainUrl}}/users/{{subscriberId}}/subscriptions",
+          "host": [
+            "{{mainUrl}}"
+          ],
+          "path": [
+            "users",
+            "{{subscriberId}}",
+            "subscriptions"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "mainUrl",
+      "value": ""
+    },
+    {
+      "key": "subscriberName",
+      "value": ""
+    },
+    {
+      "key": "subscriberEmail",
+      "value": ""
+    },
+    {
+      "key": "subscriberId",
+      "value": ""
+    },
+    {
+      "key": "authorAName",
+      "value": ""
+    },
+    {
+      "key": "authorAEmail",
+      "value": ""
+    },
+    {
+      "key": "authorAId",
+      "value": ""
+    },
+    {
+      "key": "authorBName",
+      "value": ""
+    },
+    {
+      "key": "authorBEmail",
+      "value": ""
+    },
+    {
+      "key": "authorBId",
+      "value": ""
+    },
+    {
+      "key": "categoryName",
+      "value": ""
+    },
+    {
+      "key": "categoryId",
+      "value": ""
+    },
+    {
+      "key": "eventA1Date",
+      "value": ""
+    },
+    {
+      "key": "eventA1Id",
+      "value": ""
+    },
+    {
+      "key": "eventA2Date",
+      "value": ""
+    },
+    {
+      "key": "eventA2Id",
+      "value": ""
+    },
+    {
+      "key": "eventB1Date",
+      "value": ""
+    },
+    {
+      "key": "eventB1Id",
+      "value": ""
+    },
+    {
+      "key": "eventA3Date",
+      "value": ""
+    },
+    {
+      "key": "eventA3Id",
+      "value": ""
+    }
+  ]
+}

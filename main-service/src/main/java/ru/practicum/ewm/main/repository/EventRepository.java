@@ -89,4 +89,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("select e from Event e join fetch e.category join fetch e.initiator where e.id = :id")
     Optional<Event> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("select e from Event e join fetch e.category join fetch e.initiator i "
+            + "where e.initiator.id in (select s.author.id from Subscription s where s.subscriber.id = :userId) "
+            + "and e.state = :state and e.eventDate > :now "
+            + "order by i.name, i.id, e.eventDate, e.id "
+            + "limit :size offset :from")
+    List<Event> findSubscriptionEvents(@Param("userId") Long userId,
+                                       @Param("state") EventState state,
+                                       @Param("now") LocalDateTime now,
+                                       @Param("from") int from,
+                                       @Param("size") int size);
 }

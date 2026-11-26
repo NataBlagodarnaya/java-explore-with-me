@@ -50,3 +50,12 @@ CREATE TABLE IF NOT EXISTS compilations_events (
     event_id       BIGINT NOT NULL REFERENCES events (id) ON DELETE CASCADE,
     PRIMARY KEY (compilation_id, event_id)
 );
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    subscriber_id BIGINT NOT NULL,
+    author_id BIGINT NOT NULL,
+    CONSTRAINT fk_subscriptions_subscriber FOREIGN KEY (subscriber_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_subscriptions_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT uq_subscription UNIQUE (subscriber_id, author_id)
+);

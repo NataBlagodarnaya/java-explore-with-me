@@ -13,9 +13,11 @@ import ru.practicum.ewm.main.mapper.CompilationMapper;
 import ru.practicum.ewm.main.mapper.EventMapper;
 import ru.practicum.ewm.main.model.Compilation;
 import ru.practicum.ewm.main.model.Event;
+import ru.practicum.ewm.main.model.User;
 import ru.practicum.ewm.main.repository.CompilationRepository;
 import ru.practicum.ewm.main.repository.EventRepository;
 import ru.practicum.ewm.main.repository.RequestRepository;
+import ru.practicum.ewm.main.repository.UserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final EventStatsService eventStatsService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -120,12 +123,17 @@ public class CompilationServiceImpl implements CompilationService {
         Map<Long, Long> confirmed = requestRepository.countConfirmedByEventIds(
                 events.stream().map(Event::getId).toList());
         Map<Long, Long> views = eventStatsService.getViews(events);
+        Map<Long, User> initiators = userRepository.findAllById(
+                        events.stream().map(event -> event.getInitiator().getId()).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
 
         return compilations.stream()
                 .map(compilation -> CompilationMapper.toCompilationDto(compilation,
                         compilation.getEvents().stream()
                                 .sorted(Comparator.comparing(Event::getId))
                                 .map(event -> EventMapper.toEventShortDto(event,
+                                        initiators.get(event.getInitiator().getId()),
                                         confirmed.getOrDefault(event.getId(), 0L),
                                         views.getOrDefault(event.getId(), 0L)))
                                 .toList()))

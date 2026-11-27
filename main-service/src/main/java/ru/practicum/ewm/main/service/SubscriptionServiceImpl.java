@@ -21,6 +21,7 @@ import ru.practicum.ewm.main.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -78,8 +79,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         Map<Long, Long> confirmed = requestRepository.countConfirmedByEventIds(
                 events.stream().map(Event::getId).toList());
         Map<Long, Long> views = eventStatsService.getViews(events);
+        Map<Long, User> initiators = userRepository.findAllById(
+                        events.stream().map(event -> event.getInitiator().getId()).distinct().toList())
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
+                        initiators.get(event.getInitiator().getId()),
                         confirmed.getOrDefault(event.getId(), 0L),
                         views.getOrDefault(event.getId(), 0L)))
                 .toList();

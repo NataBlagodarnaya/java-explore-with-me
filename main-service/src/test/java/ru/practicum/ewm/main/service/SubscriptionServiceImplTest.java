@@ -157,11 +157,13 @@ class SubscriptionServiceImplTest {
 
     @Test
     void getSubscriptionEvents_shouldReturnEventsWithConfirmedAndViews() {
-        Event event = createEvent(10L, createUser(2L, "Мария Сидорова", "maria@practicummail.ru"));
+        User author = createUser(2L, "Мария Сидорова", "maria@practicummail.ru");
+        Event event = createEvent(10L, author);
         when(userRepository.findById(1L)).thenReturn(Optional.of(createUser(1L, "Иван Петров",
                 "ivan@practicummail.ru")));
         when(eventRepository.findSubscriptionEvents(eq(1L), eq(EventState.PUBLISHED), any(LocalDateTime.class),
                 eq(0), eq(10))).thenReturn(List.of(event));
+        when(userRepository.findAllById(any())).thenReturn(List.of(author));
         when(requestRepository.countConfirmedByEventIds(any())).thenReturn(Map.of(10L, 2L));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(10L, 7L));
 
@@ -171,6 +173,7 @@ class SubscriptionServiceImplTest {
         assertEquals(10L, result.get(0).getId());
         assertEquals(2L, result.get(0).getConfirmedRequests());
         assertEquals(7L, result.get(0).getViews());
+        assertEquals("Мария Сидорова", result.get(0).getInitiator().getName());
     }
 
     @Test

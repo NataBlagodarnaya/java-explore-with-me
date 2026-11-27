@@ -29,7 +29,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventFullDto toEventFullDto(Event event, long confirmedRequests, long views) {
+    public static EventFullDto toEventFullDto(Event event, User initiator, long confirmedRequests, long views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -38,7 +38,7 @@ public class EventMapper {
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
-                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(initiator))
                 .location(toLocationDto(event.getLocation()))
                 .paid(event.isPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -50,14 +50,14 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, long confirmedRequests, long views) {
+    public static EventShortDto toEventShortDto(Event event, User initiator, long confirmedRequests, long views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .confirmedRequests(confirmedRequests)
                 .eventDate(event.getEventDate())
-                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(initiator))
                 .paid(event.isPaid())
                 .title(event.getTitle())
                 .views(views)

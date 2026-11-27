@@ -17,6 +17,7 @@ import ru.practicum.ewm.main.model.User;
 import ru.practicum.ewm.main.repository.CompilationRepository;
 import ru.practicum.ewm.main.repository.EventRepository;
 import ru.practicum.ewm.main.repository.RequestRepository;
+import ru.practicum.ewm.main.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -49,6 +50,9 @@ class CompilationServiceImplTest {
     @Mock
     private EventStatsService eventStatsService;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private CompilationServiceImpl compilationService;
 
@@ -58,6 +62,7 @@ class CompilationServiceImplTest {
         when(compilationRepository.existsByTitle("Летние концерты")).thenReturn(false);
         when(eventRepository.findAllByIdsWithDetails(Set.of(10L))).thenReturn(List.of(event));
         mockSave();
+        mockInitiator();
 
         CompilationDto result = compilationService.saveCompilation(
                 new NewCompilationRequest(Set.of(10L), true, "Летние концерты"));
@@ -140,6 +145,7 @@ class CompilationServiceImplTest {
         compilation.setEvents(new HashSet<>(Set.of(createEvent(10L))));
         when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
         when(eventRepository.findAllByIdsWithDetails(Set.of(20L))).thenReturn(List.of(createEvent(20L)));
+        mockInitiator();
 
         CompilationDto result = compilationService.updateCompilation(1L,
                 new UpdateCompilationRequest(Set.of(20L), null, null));
@@ -235,6 +241,7 @@ class CompilationServiceImplTest {
         compilation.setEvents(new HashSet<>(Set.of(createEvent(10L))));
         when(compilationRepository.findByIdWithEvents(1L)).thenReturn(Optional.of(compilation));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(10L, 4L));
+        mockInitiator();
 
         CompilationDto result = compilationService.getCompilation(1L);
 
@@ -264,10 +271,18 @@ class CompilationServiceImplTest {
                 .title("Концерт группы")
                 .annotation("Концерт под открытым небом")
                 .category(Category.builder().id(2L).name("Концерты").build())
-                .initiator(User.builder().id(1L).name("Иван Петров").email("ivan@practicummail.ru").build())
+                .initiator(createInitiator())
                 .eventDate(LocalDateTime.now().plusDays(2))
                 .paid(false)
                 .build();
+    }
+
+    private User createInitiator() {
+        return User.builder().id(1L).name("Иван Петров").email("ivan@practicummail.ru").build();
+    }
+
+    private void mockInitiator() {
+        when(userRepository.findAllById(any())).thenReturn(List.of(createInitiator()));
     }
 
     private void mockSave() {

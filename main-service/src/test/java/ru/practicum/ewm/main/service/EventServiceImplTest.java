@@ -220,6 +220,7 @@ class EventServiceImplTest {
     void updateEventByAdmin_shouldPublishEvent_whenEventIsPending() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
         when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.PUBLISH_EVENT);
 
@@ -255,6 +256,7 @@ class EventServiceImplTest {
     void updateEventByAdmin_shouldRejectEvent_whenEventIsPending() {
         Event event = createEvent(5L, EventState.PENDING, LocalDateTime.now().plusDays(2));
         when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
         UpdateEventAdminRequest request = new UpdateEventAdminRequest();
         request.setStateAction(AdminStateAction.REJECT_EVENT);
 
@@ -308,6 +310,7 @@ class EventServiceImplTest {
     @Test
     void getEventsByAdmin_shouldReturnEventsWithConfirmedAndViews() {
         Event event = createEvent(1L, EventState.PENDING, LocalDateTime.now().plusDays(2));
+        when(userRepository.findAllById(any())).thenReturn(List.of(createUser()));
         when(eventRepository.findAllByAdminFilters(anyBoolean(), any(), anyBoolean(), any(), anyBoolean(),
                 any(), any(), any(), anyInt(), anyInt())).thenReturn(List.of(event));
         when(requestRepository.countConfirmedByEventIds(any())).thenReturn(Map.of(1L, 3L));
@@ -333,6 +336,7 @@ class EventServiceImplTest {
     @Test
     void getPublicEvents_shouldReturnPageWithConfirmedAndViews_whenSortIsNotViews() {
         Event event = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
+        when(userRepository.findAllById(any())).thenReturn(List.of(createUser()));
         when(eventRepository.findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
                 anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), anyInt(), anyInt()))
                 .thenReturn(List.of(event));
@@ -353,6 +357,7 @@ class EventServiceImplTest {
         Event first = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
         Event second = createEvent(2L, EventState.PUBLISHED, LocalDateTime.now().plusDays(3));
         Event third = createEvent(3L, EventState.PUBLISHED, LocalDateTime.now().plusDays(4));
+        when(userRepository.findAllById(any())).thenReturn(List.of(createUser()));
         when(eventRepository.findPublicEvents(any(), anyBoolean(), anyString(), anyBoolean(), any(),
                 anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any()))
                 .thenReturn(List.of(first, second, third));
@@ -369,6 +374,7 @@ class EventServiceImplTest {
     void getPublicEvents_shouldKeepRepositoryOrderAndPassPaging_whenSortIsEventDate() {
         Event earlier = createEvent(2L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
         Event later = createEvent(1L, EventState.PUBLISHED, LocalDateTime.now().plusDays(5));
+        when(userRepository.findAllById(any())).thenReturn(List.of(createUser()));
         when(eventRepository.findPublicEventsPage(any(), anyBoolean(), anyString(), anyBoolean(), any(),
                 anyBoolean(), anyBoolean(), any(), any(), anyBoolean(), any(), anyInt(), anyInt()))
                 .thenReturn(List.of(earlier, later));
@@ -407,6 +413,7 @@ class EventServiceImplTest {
     void getPublicEvent_shouldReturnEventWithViews_whenEventIsPublished() {
         Event event = createEvent(5L, EventState.PUBLISHED, LocalDateTime.now().plusDays(2));
         when(eventRepository.findByIdWithDetails(5L)).thenReturn(Optional.of(event));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(createUser()));
         when(eventStatsService.getViews(any())).thenReturn(Map.of(5L, 3L));
 
         EventFullDto result = eventService.getPublicEvent(5L);

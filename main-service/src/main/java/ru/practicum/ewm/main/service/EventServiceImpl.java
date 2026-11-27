@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -52,17 +53,17 @@ public class EventServiceImpl implements EventService {
 
         Event saved = eventRepository.save(EventMapper.toEvent(request, category, user));
         log.info("Создано событие id={} пользователем id={}", saved.getId(), userId);
-        return EventMapper.toEventFullDto(saved, countConfirmed(saved.getId()), 0L);
+        return EventMapper.toEventFullDto(saved, user, countConfirmed(saved.getId()), 0L);
     }
 
     @Override
     public List<EventShortDto> getUserEvents(Long userId, int from, int size) {
-        findUser(userId);
+        User user = findUser(userId);
         List<Event> events = eventRepository.findAllByInitiatorIdWithOffset(userId, from, size);
         Map<Long, Long> confirmed = countConfirmedForEvents(events);
         Map<Long, Long> views = eventStatsService.getViews(events);
         return events.stream()
-                .map(event -> EventMapper.toEventShortDto(event,
+                .map(event -> EventMapper.toEventShortDto(event, user,
                         confirmed.getOrDefault(event.getId(), 0L),
                         views.getOrDefault(event.getId(), 0L)))
                 .toList();
@@ -70,15 +71,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getUserEvent(Long userId, Long eventId) {
-        findUser(userId);
+        User user = findUser(userId);
         Event event = findUserEvent(userId, eventId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
+        return EventMapper.toEventFullDto(event, user, countConfirmed(eventId), countViews(event));
     }
 
     @Override
     @Transactional
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest request) {
-        findUser(userId);
+        User user = findUser(userId);
         Event event = findUserEvent(userId, eventId);
 
         if (event.getState() == EventState.PUBLISHED) {
@@ -119,7 +120,7 @@ public class EventServiceImpl implements EventService {
         }
 
         log.info("Обновлено событие id={} пользователем id={}", eventId, userId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
+        return EventMapper.toEventFullDto(event, user, countConfirmed(eventId), countViews(event));
     }
 
     @Override
@@ -142,8 +143,10 @@ public class EventServiceImpl implements EventService {
 
         Map<Long, Long> confirmed = countConfirmedForEvents(events);
         Map<Long, Long> views = eventStatsService.getViews(events);
+        Map<Long, User> initiators = findInitiators(events);
         return events.stream()
                 .map(event -> EventMapper.toEventFullDto(event,
+                        initiators.get(event.getInitiator().getId()),
                         confirmed.getOrDefault(event.getId(), 0L),
                         views.getOrDefault(event.getId(), 0L)))
                 .toList();
@@ -202,7 +205,8 @@ public class EventServiceImpl implements EventService {
         }
 
         log.info("Обновлено событие id={} администратором", eventId);
-        return EventMapper.toEventFullDto(event, countConfirmed(eventId), countViews(event));
+        return EventMapper.toEventFullDto(event, findUser(event.getInitiator().getId()),
+                countConfirmed(eventId), countViews(event));
     }
 
     @Override
@@ -234,8 +238,10 @@ public class EventServiceImpl implements EventService {
 
         Map<Long, Long> confirmed = countConfirmedForEvents(events);
         Map<Long, Long> views = eventStatsService.getViews(events);
+        Map<Long, User> initiators = findInitiators(events);
         Stream<EventShortDto> dtos = events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
+                        initiators.get(event.getInitiator().getId()),
                         confirmed.getOrDefault(event.getId(), 0L),
                         views.getOrDefault(event.getId(), 0L)));
 
@@ -254,7 +260,7 @@ public class EventServiceImpl implements EventService {
                 .filter(found -> found.getState() == EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + id + " was not found"));
         long views = eventStatsService.getViews(List.of(event)).getOrDefault(id, 0L);
-        return EventMapper.toEventFullDto(event, countConfirmed(id), views);
+        return EventMapper.toEventFullDto(event, findUser(event.getInitiator().getId()), countConfirmed(id), views);
     }
 
     private void checkPublicationDate(LocalDateTime eventDate) {
@@ -282,6 +288,15 @@ public class EventServiceImpl implements EventService {
     private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User with id=" + userId + " was not found"));
+    }
+
+    private Map<Long, User> findInitiators(Collection<Event> events) {
+        List<Long> initiatorIds = events.stream()
+                .map(event -> event.getInitiator().getId())
+                .distinct()
+                .toList();
+        return userRepository.findAllById(initiatorIds).stream()
+                .collect(Collectors.toMap(User::getId, user -> user));
     }
 
     private Category findCategory(Long catId) {

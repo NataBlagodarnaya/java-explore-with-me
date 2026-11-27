@@ -5,7 +5,6 @@ import ru.practicum.ewm.main.dto.event.EventFullDto;
 import ru.practicum.ewm.main.dto.event.EventShortDto;
 import ru.practicum.ewm.main.dto.event.LocationDto;
 import ru.practicum.ewm.main.dto.eventrequest.NewEventRequest;
-import ru.practicum.ewm.main.dto.user.UserShortDto;
 import ru.practicum.ewm.main.model.*;
 
 import java.time.LocalDateTime;
@@ -30,7 +29,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventFullDto toEventFullDto(Event event, long confirmedRequests, long views) {
+    public static EventFullDto toEventFullDto(Event event, User initiator, long confirmedRequests, long views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -39,7 +38,7 @@ public class EventMapper {
                 .createdOn(event.getCreatedOn())
                 .description(event.getDescription())
                 .eventDate(event.getEventDate())
-                .initiator(toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(initiator))
                 .location(toLocationDto(event.getLocation()))
                 .paid(event.isPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -51,14 +50,14 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto toEventShortDto(Event event, long confirmedRequests, long views) {
+    public static EventShortDto toEventShortDto(Event event, User initiator, long confirmedRequests, long views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
                 .confirmedRequests(confirmedRequests)
                 .eventDate(event.getEventDate())
-                .initiator(toUserShortDto(event.getInitiator()))
+                .initiator(UserMapper.toUserShortDto(initiator))
                 .paid(event.isPaid())
                 .title(event.getTitle())
                 .views(views)
@@ -71,9 +70,5 @@ public class EventMapper {
 
     public static LocationDto toLocationDto(Location location) {
         return new LocationDto(location.getLat(), location.getLon());
-    }
-
-    private static UserShortDto toUserShortDto(User user) {
-        return new UserShortDto(user.getId(), user.getName());
     }
 }
